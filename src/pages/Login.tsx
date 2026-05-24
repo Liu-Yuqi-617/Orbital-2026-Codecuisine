@@ -1,5 +1,12 @@
 import { useState } from "react"
 
+import {
+    useNavigate
+}
+    from "react-router-dom"
+
+import Register from "./Register"
+
 function Login() {
 
     const [username, setUsername] =
@@ -7,6 +14,8 @@ function Login() {
 
     const [password, setPassword] =
         useState("")
+
+    const navigate = useNavigate()
 
     function handleSubmit(
         e: React.FormEvent
@@ -17,6 +26,9 @@ function Login() {
         console.log(username)
 
         console.log(password)
+
+        // Navigate to the profile page after successful login
+        navigate("/profile")
     }
 
     return (
@@ -57,10 +69,19 @@ function Login() {
             <button>
                 Login
             </button>
-        </form>
 
+            <button onClick={handleRegister}>
+                Register
+            </button>
+
+        </form>
     )
 
+
+    function handleRegister(e: React.FormEvent) {
+        e.preventDefault()
+        navigate("/register")
+    }
 }
 
 export default Login
