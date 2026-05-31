@@ -1,87 +1,51 @@
-import { useState } from "react"
-
-import {
-    useNavigate
-}
-    from "react-router-dom"
-
-import Register from "./Register"
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 function Login() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-    const [username, setUsername] =
-        useState("")
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
-    const [password, setPassword] =
-        useState("")
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
 
-    const navigate = useNavigate()
+    // mock login (no backend)
+    login({
+      username: email.split("@")[0],
+      email,
+    });
 
-    function handleSubmit(
-        e: React.FormEvent
-    ) {
+    navigate("/profile");
+  }
 
-        e.preventDefault()
+  return (
+    <form onSubmit={handleSubmit}>
+      <h2>Login</h2>
 
-        console.log(username)
+      <input
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        placeholder="Email"
+      />
 
-        console.log(password)
+      <br />
 
-        // Navigate to the profile page after successful login
-        navigate("/profile")
-    }
+      <input
+        type="password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        placeholder="Password"
+      />
 
-    return (
+      <br />
 
-        <form
-            onSubmit={handleSubmit}
-        >
-
-            <h2>Login</h2>
-
-
-            <input
-                value={username}
-                onChange={(e) =>
-                    setUsername(
-                        e.target.value
-                    )
-                }
-                type="text"
-                placeholder="Username"
-            />
-
-            <br />
-
-            <input
-                type="password"
-                value={password}
-                onChange={(e) =>
-                    setPassword(
-                        e.target.value
-                    )
-                }
-                placeholder="Password"
-            />
-
-            <br />
-
-            <button>
-                Login
-            </button>
-
-            <button onClick={handleRegister}>
-                Register
-            </button>
-
-        </form>
-    )
-
-
-    function handleRegister(e: React.FormEvent) {
-        e.preventDefault()
-        navigate("/register")
-    }
+      <button type="submit">Login</button>
+    </form>
+  );
 }
 
-export default Login
+export default Login;
