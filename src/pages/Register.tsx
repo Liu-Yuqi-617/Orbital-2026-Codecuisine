@@ -1,59 +1,81 @@
-import { useState } from "react"
-import { useNavigate } from "react-router-dom"
-
-import Login from "./Login"
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 function Register() {
+    const [username, setUsername] = useState("");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [confirm, setConfirm] = useState("");
 
-    const [username, setUsername] = useState("")
-    const [password, setPassword] = useState("")
-    const [confirm, setConfirm] = useState("")
-    const navigate = useNavigate()
+    const navigate = useNavigate();
 
     function handleSubmit(e: React.FormEvent) {
-        e.preventDefault()
+        e.preventDefault();
 
-        if (password !== confirm) {
-
-            alert("Passwords do not match")
-            return
+        if (!username || !email || !password || !confirm) {
+            alert("Please fill in all fields");
+            return;
         }
 
-        navigate("/login")
+        if (password !== confirm) {
+            alert("Passwords do not match");
+            return;
+        }
+
+        console.log({
+            username,
+            email,
+            password,
+        });
+
+        navigate("/login");
     }
 
     return (
-        <form onSubmit={handleSubmit}>
+        <div>
+            <h2>Register</h2>
+            <form onSubmit={handleSubmit}>
+                <input
+                    placeholder="Username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                />
 
-            <input
-                placeholder="Username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-            />
+                <br />
 
-            <br />
+                <input
+                    type="email"
+                    placeholder="Email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                />
 
-            <input
-                placeholder="Password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-            />
-            <br />
-    
-            <input
-                placeholder="Confirm Password"
-                type="password"
-                value={confirm}
-                onChange={(e) => setConfirm(e.target.value)}
-            />
-            <br />
+                <br />
 
+                <input
+                    placeholder="Password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                />
 
-            <button type="submit" onClick={handleSubmit}>
-                Register
-            </button>
-        </form>
-    )
+                <br />
+
+                <input
+                    placeholder="Confirm Password"
+                    type="password"
+                    value={confirm}
+                    onChange={(e) => setConfirm(e.target.value)}
+                />
+
+                <br />
+
+                <button type="submit">
+                    Register
+                </button>
+            </form>
+        </div>
+    );
 }
+
 export default Register;

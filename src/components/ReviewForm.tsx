@@ -19,10 +19,12 @@ export default function ReviewForm({
       taste,
       value,
       ambiance,
-      verified: false
+      verified: false,
+      image: file ? URL.createObjectURL(file) : null
     });
 
     setTitle("");
+    setFile(null);
   }
 
   return (

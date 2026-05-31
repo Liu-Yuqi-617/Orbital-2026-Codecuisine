@@ -44,7 +44,17 @@ function Login() {
       <br />
 
       <button type="submit">Login</button>
+
+      <br/>
+      
+      <button
+        type="button"
+        onClick={() => navigate("/register")}
+      >
+        Register
+      </button>
     </form>
+
   );
 }
 

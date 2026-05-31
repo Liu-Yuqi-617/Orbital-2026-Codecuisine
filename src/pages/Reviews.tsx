@@ -1,16 +1,27 @@
 import { useState } from "react";
 import ReviewForm from "../components/ReviewForm";
 import ReviewList from "../components/ReviewList";
+import Navbar from "../components/Navbar";
+import { useAuth } from "../context/AuthContext";
 
 export default function Reviews() {
   const [reviews, setReviews] = useState<any[]>([]);
+  const { user } = useAuth();
+
 
   function addReview(review: any) {
-    setReviews([...reviews, review]);
+    setReviews([
+      ...reviews,
+      {
+        ...review,
+        user: user?.username || "guest"
+      }
+    ]);
   }
 
   return (
     <div>
+      <Navbar />
       <h1>Restaurant Reviews</h1>
 
       <div
