@@ -1,77 +1,184 @@
-<<<<<<< HEAD
-# React + TypeScript + Vite
+# Food Discovery Platform by CodeCuisine
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Team Members
 
-Currently, two official plugins are available:
+* Liu Yuqi
+* Zhu Penglong
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+---
 
-## React Compiler
+## Project Description
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+CodeCuisine is a food discovery platform designed to help users find reliable and high-quality restaurant recommendations.
 
-## Expanding the ESLint configuration
+Unlike traditional review platforms that rely heavily on simple star ratings, CodeCuisine focuses on review credibility through proof-of-dine verification and multi-dimensional review metrics.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+Users can:
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+* Register and log in securely
+* Create multi-dimensional food reviews
+* Submit proof-of-dine verification
+* Upload food and restaurant images
+* Browse community reviews and discover new restaurants
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+Future versions will allow users to:
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+* Like and comment on reviews
+* Evaluate review quality and trustworthiness
+* Save favorite restaurants to a personal wishlist
+* Search and filter restaurants dynamically
+
+---
+
+## Motivation
+
+Many food review platforms suffer from unreliable ratings, fake reviews, and limited review depth.
+
+CodeCuisine aims to provide a more trustworthy and informative food discovery experience by introducing:
+
+* Multi-dimensional rating systems
+* Proof-of-dine verification
+* Review quality assessment
+* Personalized restaurant discovery
+
+---
+
+## Tech Stack
+
+### Frontend
+
+* React + TypeScript
+* Vite development environment
+* Component-based architecture
+* React Router for client-side routing
+* Context API for global authentication state management
+* Axios for API communication
+
+### Backend
+
+* .......
+
+### Database
+
+* .......
+
+---
+
+## Installation
+
+### Frontend
+
+```bash
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### Backend
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+npm run dev
 ```
-=======
 
->>>>>>> db2a0b1dc78e6ef6e29e79a0ca56c59d2f52462c
+---
+
+## Key Features
+
+### User Authentication
+
+* User registration and login
+* JWT-based authentication
+* Protected routes
+
+### Multi-Dimensional Reviews
+
+Users can rate restaurants across multiple categories, including:
+
+* Taste
+* Value
+* Ambience
+
+### Proof-of-Dine Verification
+
+Users can upload supporting evidence of their dining experience to improve review credibility.
+
+### Restaurant Discovery
+
+Browse reviews and discover restaurants through community-generated content.
+
+---
+
+## Current Progress
+
+### Milestone 1
+
+Completed:
+
+* User Authentication
+* Protected Routes
+* Review Creation
+* Basic Frontend Interface
+* Review Submission Workflow
+* Image Upload Functionality
+* ............
+
+### Planned for Future Milestones
+
+
+* Dynamic Search & Filter Feed
+* Quick-Save Wishlist
+* Review Quality & Trust Scoring
+* Like & Comment System
+* Personalized Recommendations
+
+---
+
+## Project Structure
+
+```text
+frontend/
+├── src/
+│   ├── pages/
+│   ├── components/
+│   ├── context/
+│   ├── services/
+│   ├── api/
+|   └──types/
+
+backend/
+......
+```
+
+---
+
+## Future Features
+
+* Dynamic Search & Filter Feed
+* Quick-Save Wishlist
+* Review Quality & Trust Scoring
+* Like & Comment System
+* Personalized Restaurant Recommendations
+* Restaurant Image Upload
+* User Profile Management
+
+---
+
+## Screenshots
+* Login Page
+  
+  <img width="788" height="400" alt="image" src="https://github.com/user-attachments/assets/5bb9b4de-bf78-4bdf-bcf9-67e9177bf57a" />
+  Users can log in using their registered credentials.
+
+* Register Page
+  <img width="815" height="427" alt="image" src="https://github.com/user-attachments/assets/ba15684a-c6c1-46ee-afe5-5894b56a3192" />
+  New users can create an account through the registration form.
+
+* Profile Page
+  <img width="769" height="457" alt="image" src="https://github.com/user-attachments/assets/b393e174-ee97-4fb3-b9e7-137641e5111d" />
+  Displays authenticated user information and account details.
+
+* Review Page
+  <img width="1274" height="1120" alt="image" src="https://github.com/user-attachments/assets/5e78ff0c-8c81-4d63-aec2-77443689fe7a" />
+  Users can create food reviews, provide multi-dimensional ratings, and upload images as proof of their dining experience.
+
+More screenshots will be added in future milestones.
