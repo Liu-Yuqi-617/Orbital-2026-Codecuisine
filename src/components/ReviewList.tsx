@@ -75,7 +75,7 @@ export default function ReviewList({
                                     fontSize: "13px",
                                 }}
                             >
-                                ✅ Certified Authentic
+                                Certified Authentic
                             </p>
                         )}
 

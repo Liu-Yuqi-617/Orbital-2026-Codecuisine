@@ -6,12 +6,16 @@ import (
 	"codecuisine-backend/internal/handlers"
 	"codecuisine-backend/internal/middleware"
 
+	"fmt"
+
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
 	// load env variables
 	cfg := config.Load()
+
+	fmt.Println("DSN:", cfg.DSN())
 
 	// connect to mysql
 	db, err := database.Connect(cfg.DSN())

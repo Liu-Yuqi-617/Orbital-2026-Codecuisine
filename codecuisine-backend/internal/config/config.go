@@ -1,11 +1,6 @@
 package config
 
-import (
-	"fmt"
-	"os"
-
-	"github.com/joho/godotenv"
-)
+import "fmt"
 
 // Config holds all app settings
 type Config struct {
@@ -18,33 +13,21 @@ type Config struct {
 	ServerAddr string // server listen address
 }
 
-// Load reads config from environment variables
+// Load returns hardcoded config
 func Load() *Config {
-	// load .env file if exists
-	godotenv.Load()
-
 	return &Config{
-		DBHost:     getEnv("DB_HOST", "localhost"),
-		DBPort:     getEnv("DB_PORT", "3306"),
-		DBUser:     getEnv("DB_USER", "codecuisine"),
-		DBPassword: getEnv("DB_PASSWORD", ""),
-		DBName:     getEnv("DB_NAME", "codecuisine_db"),
-		JWTSecret:  getEnv("JWT_SECRET", "my-secret-key"),
-		ServerAddr: getEnv("SERVER_ADDR", ":8080"),
+		DBHost:     "localhost",
+		DBPort:     "3306",
+		DBUser:     "root",
+		DBPassword: "123456",
+		DBName:     "codecuisine",
+		JWTSecret:  "my-secret-key",
+		ServerAddr: ":8080",
 	}
 }
 
 // DSN builds mysql connection string
 func (c *Config) DSN() string {
-	return fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
+	return fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local&allowNativePasswords=true",
 		c.DBUser, c.DBPassword, c.DBHost, c.DBPort, c.DBName)
-}
-
-// getEnv reads env var, returns fallback if not set
-func getEnv(key, fallback string) string {
-	v := os.Getenv(key)
-	if v != "" {
-		return v
-	}
-	return fallback
 }
