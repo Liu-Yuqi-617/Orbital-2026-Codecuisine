@@ -68,16 +68,15 @@ export default function ReviewList({
                             Ambiance: {review.ambiance}
                         </p>
 
-                        {review.verified && (
-                            <p
-                                style={{
-                                    marginTop: "6px",
-                                    fontSize: "13px",
-                                }}
-                            >
-                                Certified Authentic
-                            </p>
-                        )}
+
+                        <p style={{
+                            marginTop: "6px",
+                            fontSize: "13px",
+                        }}>
+                            {review.verified
+                                ? "√ Verified Dine-In"
+                                : "✗ Unverified"}
+                        </p>
 
                     </div>
 

@@ -10,6 +10,8 @@ export default function ReviewForm({
   const [taste, setTaste] = useState(5);
   const [value, setValue] = useState(5);
   const [ambiance, setAmbiance] = useState(5);
+  const [orderID, setOrderID] = useState("");
+  const [verified, setVerified] = useState(false);
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -19,12 +21,14 @@ export default function ReviewForm({
       taste,
       value,
       ambiance,
+      orderID,
       verified: false,
       image: file ? URL.createObjectURL(file) : null
     });
 
     setTitle("");
     setFile(null);
+    setOrderID("");
   }
 
   return (
@@ -57,6 +61,12 @@ export default function ReviewForm({
         max="5"
         value={ambiance}
         onChange={(e) => setAmbiance(Number(e.target.value))}
+      />
+
+      <input
+        value={orderID}
+        onChange={(e) => setOrderID(e.target.value)}
+        placeholder="Order ID (for verification)"
       />
 
       <input
