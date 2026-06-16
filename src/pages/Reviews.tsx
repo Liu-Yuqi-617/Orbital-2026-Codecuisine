@@ -8,8 +8,6 @@ export default function Reviews() {
   const [reviews, setReviews] = useState<any[]>([]);
   const { user } = useAuth();
 
-  
-
   async function addReview(review: any) {
     if (review.orderID.trim() === "") {
       alert("Order ID is required for verification");

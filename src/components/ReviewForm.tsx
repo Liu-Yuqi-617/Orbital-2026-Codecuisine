@@ -11,7 +11,6 @@ export default function ReviewForm({
   const [value, setValue] = useState(5);
   const [ambiance, setAmbiance] = useState(5);
   const [orderID, setOrderID] = useState("");
-  const [verified, setVerified] = useState(false);
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
