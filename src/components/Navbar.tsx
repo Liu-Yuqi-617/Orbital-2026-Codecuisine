@@ -24,6 +24,15 @@ export default function Navbar() {
             >
                 Reviews
             </button>
+
+            {" "}
+
+            <button
+                onClick={() => navigate("/search")}
+            >
+                Search & Filter
+            </button>
+
         </div>
     );
 }

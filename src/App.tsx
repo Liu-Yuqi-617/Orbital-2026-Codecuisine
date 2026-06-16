@@ -8,6 +8,7 @@ import Login from "./pages/Login"
 import Register from "./pages/Register"
 import Profile from "./pages/Profile"
 import Reviews from "./pages/Reviews"
+import Search from "./pages/Search"
 
 import {
     AuthProvider
@@ -55,6 +56,15 @@ function App() {
                         element={
                             <ProtectedRoute>
                                 <Reviews />
+                            </ProtectedRoute>
+                        }
+                    />
+
+                    <Route
+                        path="/search"
+                        element={
+                            <ProtectedRoute>
+                                <Search />
                             </ProtectedRoute>
                         }
                     />
