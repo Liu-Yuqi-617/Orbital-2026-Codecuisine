@@ -74,7 +74,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 	if result := h.db.Create(&user); result.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"code":    500,
-			"message": "Failed to create a new user",
+			"message": "Failed to create a new user" + result.Error.Error(),
 		})
 		return
 	}

@@ -16,14 +16,27 @@ function Register() {
         setError("");
 
         if (!username || !email || !password || !confirm) {
-            alert("Please fill in all fields");
             setError("Please fill in all fields");
+            alert("Please fill in all fields");
             return;
         }
 
         if (password !== confirm) {
-            alert("Passwords do not match");
             setError("Passwords do not match");
+            alert("Passwords do not match");
+            return;
+        }
+
+        if (password.length < 6) {
+            setError("Password should be at least 6 characters");
+            return;
+        }
+
+        if (username.length < 3 || username.length > 20) {
+            setError("Username should be between 3 and 20 characters");
+        }
+        if (!email.includes('@') || !email.includes('.')) {
+            setError("Please enter a valid email address");
             return;
         }
 
