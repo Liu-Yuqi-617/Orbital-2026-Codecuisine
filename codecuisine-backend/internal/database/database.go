@@ -17,23 +17,27 @@ func Connect(dsn string) (*gorm.DB, error) {
 		return nil, fmt.Errorf("failed to connect to database: %w", err)
 	}
 
-	// AutoMigrate creates or updates database tables to match the model structs
-	err = db.AutoMigrate(
-		&models.User{},
-		&models.Restaurant{},
-		&models.Review{},
-		&models.Verification{},
-		&models.Photo{},
-	)
-	if err != nil {
-		return nil, fmt.Errorf("auto migration failed: %w", err)
+	db = db.Debug()
+
+	if err := db.AutoMigrate(&models.User{}); err != nil {
+		return nil, fmt.Errorf("migrate User failed: %w", err)
 	}
 
-	// Create indexes to optimize common query patterns
-	db.Exec("CREATE INDEX IF NOT EXISTS idx_reviews_restaurant_id ON reviews(restaurant_id)")
-	db.Exec("CREATE INDEX IF NOT EXISTS idx_reviews_user_id ON reviews(user_id)")
-	db.Exec("CREATE INDEX IF NOT EXISTS idx_reviews_created_at ON reviews(created_at)")
-	db.Exec("CREATE INDEX IF NOT EXISTS idx_reviews_is_verified ON reviews(is_verified)")
+	if err := db.AutoMigrate(&models.Restaurant{}); err != nil {
+		return nil, fmt.Errorf("migrate Restaurant failed: %w", err)
+	}
+
+	if err := db.AutoMigrate(&models.Review{}); err != nil {
+		return nil, fmt.Errorf("migrate Review failed: %w", err)
+	}
+
+	if err := db.AutoMigrate(&models.Photo{}); err != nil {
+		return nil, fmt.Errorf("migrate Photo failed: %w", err)
+	}
+
+	if err := db.AutoMigrate(&models.Verification{}); err != nil {
+		return nil, fmt.Errorf("migrate Verification failed: %w", err)
+	}
 
 	return db, nil
 }

@@ -17,7 +17,7 @@ type Config struct {
 func Load() *Config {
 	return &Config{
 		DBHost:     "localhost",
-		DBPort:     "3306",
+		DBPort:     "3305",
 		DBUser:     "root",
 		DBPassword: "123456",
 		DBName:     "codecuisine",

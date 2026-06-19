@@ -49,7 +49,7 @@ type Review struct {
 
 	// Has-one association: optional verification record (receipt, check-in proof)
 	// Separate table enables flexible verification methods (photo receipt, GPS, QR code)
-	Verification *Verification `json:"verification,omitempty"`
+	Verification *Verification `gorm:"foreignKey:ReviewID" json:"verification,omitempty"`
 }
 
 // OverallRating calculates the arithmetic mean of the three rating dimensions and returns a float64 for decimal precision

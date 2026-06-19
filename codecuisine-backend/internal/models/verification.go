@@ -51,7 +51,4 @@ type Verification struct {
 
 	// CreatedAt is the record creation timestamp
 	CreatedAt time.Time `json:"createdAt"`
-
-	// Review is the associated review model, linked by ReviewID foreign key.
-	Review Review `gorm:"foreignKey:ReviewID" json:"-"`
 }
