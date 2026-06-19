@@ -27,6 +27,9 @@ func main() {
 	// create gin router
 	r := gin.Default()
 
+	// enable CORS middleware
+	r.Use(middleware.CORS())
+
 	// all api routes start with /api
 	api := r.Group("/api")
 	{

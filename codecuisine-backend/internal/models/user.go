@@ -1,9 +1,7 @@
 package models
 
 import (
-	"time"
-
-	"golang.org/x/crypto/bcrypt" // Industry-standard password hashing library              // ORM framework for database mapping
+	"time" // Industry-standard password hashing library              // ORM framework for database mapping
 )
 
 // User struct represents the user entity in the database
@@ -15,10 +13,10 @@ type User struct {
 	Username string `gorm:"uniqueIndex;size:50;not null" json:"username"`
 
 	// Bcrypt-hashed password, size:255 accommodates bcrypt output which can exceed 60 characters
-	PasswordHash string `gorm:"size:255;not null" json:"-"`
+	Password string `gorm:"size:255;not null" json:"-"`
 
 	// Optional email field, limited to 100 characters
-	Email string `gorm:"size:100" json:"email"`
+	Email string `gorm:"uniqueIndex;size:100;not null" json:"email"`
 
 	// Trust score with database default of 1.00, float64 for decimal precision in reputation calculations
 	TrustScore float64 `gorm:"default:1.00" json:"trustScore"`
@@ -30,25 +28,4 @@ type User struct {
 	// One-to-many relationship: a user has many reviews
 	// `omitempty` prevents null slice from appearing as "reviews": null in JSON
 	Reviews []Review `json:"reviews,omitempty"`
-}
-
-// SetPassword hashes a plaintext password using bcrypt and stores the hash
-func (u *User) SetPassword(password string) error {
-	// Generate salted hash from plaintext password
-	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	if err != nil {
-		// Propagate error
-		return err
-	}
-	// Store the encoded hash string
-	u.PasswordHash = string(hash)
-	return nil
-}
-
-// CheckPassword verifies a plaintext password against the stored bcrypt hash
-// Returns true if password matches, false otherwise
-func (u *User) CheckPassword(password string) bool {
-	// Returns nil on match, error on mismatch or malformed hash
-	err := bcrypt.CompareHashAndPassword([]byte(u.PasswordHash), []byte(password))
-	return err == nil
 }

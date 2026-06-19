@@ -3,6 +3,7 @@ package handlers
 import (
 	"net/http"
 
+	"codecuisine-backend/internal/dto"
 	"codecuisine-backend/internal/models"
 	"codecuisine-backend/pkg/utils"
 
@@ -21,98 +22,126 @@ func NewAuthHandler(db *gorm.DB, jwtSecret string) *AuthHandler {
 	return &AuthHandler{db: db, jwtSecret: jwtSecret}
 }
 
-// RegisterRequest is the signup form
-type RegisterRequest struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-	Email    string `json:"email"`
-}
-
-// LoginRequest is the login form
-type LoginRequest struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-}
-
 // Register creates new user account
 func (h *AuthHandler) Register(c *gin.Context) {
-	var req RegisterRequest
+	// Parse request
+	var req dto.RegisterRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code":    400,
+			"message": "Request parameter error: " + err.Error(),
+		})
 		return
 	}
 
-	// check if username taken
+	// Check whether the two passwords are the same
+	if req.Password != req.ConfirmPassword {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code":    400,
+			"message": "The two passwords are different",
+		})
+		return
+	}
+
+	// Check whether the email address has been registered
 	var existingUser models.User
-	result := h.db.Where("username = ?", req.Username).First(&existingUser)
+	result := h.db.Where("email = ?", req.Email).First(&existingUser)
 	if result.Error == nil {
-		c.JSON(http.StatusConflict, gin.H{"error": "username already exists"})
+		c.JSON(http.StatusConflict, gin.H{
+			"code":    409,
+			"message": "This email address has been registered",
+		})
 		return
 	}
 
-	// create user
+	// Password encryption
+	hashedPassword, err := utils.HashPassword(req.Password)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"code":    500,
+			"message": "Failed to encryt the password",
+		})
+		return
+	}
+
+	// Create a new user
 	user := models.User{
 		Username: req.Username,
 		Email:    req.Email,
+		Password: hashedPassword,
 	}
 
-	// hash password
-	if err := user.SetPassword(req.Password); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to hash password"})
-		return
-	}
-
-	// save to db
 	if result := h.db.Create(&user); result.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create user"})
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"code":    500,
+			"message": "Failed to create a new user",
+		})
 		return
 	}
 
+	// Success
 	c.JSON(http.StatusCreated, gin.H{
-		"message": "registration successful",
-		"user": gin.H{
-			"id":       user.ID,
+		"code":    201,
+		"message": "Registered successfully",
+		"data": gin.H{
 			"username": user.Username,
+			"email":    user.Email,
 		},
 	})
 }
 
 // Login checks credentials and returns jwt
 func (h *AuthHandler) Login(c *gin.Context) {
-	var req LoginRequest
+	// Parse request
+	var req dto.LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code":    400,
+			"message": "Request parameter error: " + err.Error(),
+		})
 		return
 	}
 
-	// find user
+	// Search for users based on email address
 	var user models.User
-	result := h.db.Where("username = ?", req.Username).First(&user)
+	result := h.db.Where("email = ?", req.Email).First(&user)
+
+	// Block login when the email address is unregistered
 	if result.Error != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid username or password"})
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"code":    401,
+			"message": "The email address is unregistered. Please register first",
+		})
 		return
 	}
 
-	// check password
-	if !user.CheckPassword(req.Password) {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid username or password"})
+	// Password varification
+	if !utils.CheckPassword(user.Password, req.Password) {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"code":    401,
+			"message": "Incorrect email address or password",
+		})
 		return
 	}
 
-	// generate token
-	token, err := utils.GenerateToken(user.ID, user.Username, h.jwtSecret)
+	// Generate JWT token
+	token, err := utils.GenerateToken(user.ID, user.Username, user.Email, h.jwtSecret)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to generate token"})
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"code":    500,
+			"message": "Failed to generate JWT token",
+		})
 		return
 	}
 
+	// Success
 	c.JSON(http.StatusOK, gin.H{
-		"token": token,
-		"user": gin.H{
-			"id":         user.ID,
-			"username":   user.Username,
-			"email":      user.Email,
-			"trustScore": user.TrustScore,
+		"code":    200,
+		"message": "Login successfully",
+		"data": dto.AuthResponse{
+			Token:    token,
+			Username: user.Username,
+			Email:    user.Email,
 		},
 	})
 }
@@ -124,15 +153,22 @@ func (h *AuthHandler) GetMe(c *gin.Context) {
 	var user models.User
 	result := h.db.First(&user, userID)
 	if result.Error != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+		c.JSON(http.StatusNotFound, gin.H{
+			"code":    404,
+			"message": "Inexistent user",
+		})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"id":         user.ID,
-		"username":   user.Username,
-		"email":      user.Email,
-		"trustScore": user.TrustScore,
-		"createdAt":  user.CreatedAt,
+		"code":    200,
+		"message": "Fetch successfully",
+		"data": gin.H{
+			"id":         user.ID,
+			"username":   user.Username,
+			"email":      user.Email,
+			"trustScore": user.TrustScore,
+			"createdAt":  user.CreatedAt,
+		},
 	})
 }

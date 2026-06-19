@@ -9,6 +9,31 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// CORS middleware allows frontend requests from different origins
+func CORS() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		// Allow all origins
+		ctx.Header("Access-Control-Allow-Origin", "*")
+
+		// Allow custom headers
+		ctx.Header("Access-Control-Allow-Headers", "Content-Type, Authorization")
+
+		// Allow HTTP methods
+		ctx.Header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+
+		// Cache preflight request for 24 hours
+		ctx.Header("Access-Control-Max-Age", "86400")
+
+		// Handle the pre-check request for OPTIONS
+		if ctx.Request.Method == "OPTIONS" {
+			ctx.AbortWithStatus(204) // No Content
+			return
+		}
+
+		ctx.Next()
+	}
+}
+
 // JWTAuth checks if request has valid token
 func JWTAuth(secret string) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -39,6 +64,8 @@ func JWTAuth(secret string) gin.HandlerFunc {
 		// store user info in context for handlers
 		c.Set("userID", claims.UserID)
 		c.Set("username", claims.Username)
+		c.Set("email", claims.Email)
+
 		c.Next()
 	}
 }
