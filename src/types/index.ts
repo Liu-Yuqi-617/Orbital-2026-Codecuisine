@@ -10,17 +10,23 @@ export interface User {
 export interface RegisterRequest {
   username: string;
   password: string;
-  email?: string;
+  email: string;
+  confirm_password: string;
 }
 
 export interface LoginRequest {
-  username: string;
+  email: string;
   password: string;
 }
 
 export interface AuthResponse {
-  token: string;
-  user: User;
+  code: number;
+  message: string;
+  data: {
+    token: string;
+    username: string;
+    email: string;
+  }
 }
 
 // Review types

@@ -53,9 +53,9 @@ func main() {
 		protected := api.Group("")
 		protected.Use(middleware.JWTAuth(cfg.JWTSecret))
 		{
-			protected.GET("/me", authHandler.GetMe)
+			protected.GET("/profile", authHandler.GetMe)
 			protected.POST("/reviews", reviewHandler.Create)
-			protected.GET("/reviews/me", reviewHandler.GetMyReviews)
+			protected.GET("/reviews/profile", reviewHandler.GetMyReviews)
 			protected.PUT("/reviews/:id", reviewHandler.Update)
 			protected.DELETE("/reviews/:id", reviewHandler.Delete)
 			protected.POST("/verifications/upload", verificationHandler.UploadReceipt)
