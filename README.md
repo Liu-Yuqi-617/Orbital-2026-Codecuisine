@@ -206,7 +206,7 @@ backend/
 
 * Dynamic Search & Filter Page
   <img width="1220" height="884" alt="image" src="https://github.com/user-attachments/assets/c0e263b5-80ae-4adc-8447-526634e96ed0" />
-  Users can search for restaunt reviews, and filter the results by "verified only" / "minimum rating".
+  Users can search for restaurant reviews, and filter the results by "verified only" / "minimum rating".
 
 
 More screenshots will be added in future milestones.
