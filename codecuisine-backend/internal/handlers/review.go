@@ -1,10 +1,12 @@
 package handlers
 
 import (
+	"log"
 	"net/http"
 
 	"codecuisine-backend/internal/middleware"
 	"codecuisine-backend/internal/models"
+	"codecuisine-backend/internal/service"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -12,12 +14,16 @@ import (
 
 // ReviewHandler handles review crud
 type ReviewHandler struct {
-	db *gorm.DB
+	db            *gorm.DB
+	searchService *service.SearchService
 }
 
 // NewReviewHandler creates handler
-func NewReviewHandler(db *gorm.DB) *ReviewHandler {
-	return &ReviewHandler{db: db}
+func NewReviewHandler(db *gorm.DB, searchService *service.SearchService) *ReviewHandler {
+	return &ReviewHandler{
+		db:            db,
+		searchService: searchService,
+	}
 }
 
 // CreateReviewRequest is the review form
@@ -36,7 +42,10 @@ func (h *ReviewHandler) Create(c *gin.Context) {
 
 	var req CreateReviewRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code":    400,
+			"message": err.Error(),
+		})
 		return
 	}
 
@@ -53,13 +62,19 @@ func (h *ReviewHandler) Create(c *gin.Context) {
 
 	// save
 	if result := h.db.Create(&review); result.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create review"})
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"code":    500,
+			"message": "failed to create review",
+		})
 		return
 	}
 
+	// update trust score
+	if err := h.searchService.UpdateUserTrustScore(userID); err != nil {
+		log.Printf("Failed to update trust score after review creation: %v", err)
+	}
 	// load user info for response
 	h.db.Preload("User").First(&review, review.ID)
-
 	c.JSON(http.StatusCreated, review)
 }
 
@@ -74,7 +89,10 @@ func (h *ReviewHandler) GetByRestaurant(c *gin.Context) {
 		Find(&reviews)
 
 	if result.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "query failed"})
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"code":    500,
+			"message": "query failed",
+		})
 		return
 	}
 
@@ -92,7 +110,10 @@ func (h *ReviewHandler) GetMyReviews(c *gin.Context) {
 		Find(&reviews)
 
 	if result.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "query failed"})
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"code":    500,
+			"message": "query failed",
+		})
 		return
 	}
 
@@ -108,21 +129,35 @@ func (h *ReviewHandler) Update(c *gin.Context) {
 	var review models.Review
 	result := h.db.First(&review, reviewID)
 	if result.Error != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "review not found"})
+		c.JSON(http.StatusNotFound, gin.H{
+			"code":    404,
+			"message": "review not found",
+		})
 		return
 	}
 
 	// check ownership
 	if review.UserID != userID {
-		c.JSON(http.StatusForbidden, gin.H{"error": "unauthorized"})
+		c.JSON(http.StatusForbidden, gin.H{
+			"code":    403,
+			"message": "unauthorized",
+		})
 		return
 	}
 
 	// bind new data
 	var req CreateReviewRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code":    400,
+			"message": err.Error(),
+		})
 		return
+	}
+
+	// update trust score
+	if err := h.searchService.UpdateUserTrustScore(userID); err != nil {
+		log.Printf("Failed to update trust score after review update: %v", err)
 	}
 
 	// update fields
@@ -145,16 +180,25 @@ func (h *ReviewHandler) Delete(c *gin.Context) {
 	var review models.Review
 	result := h.db.First(&review, reviewID)
 	if result.Error != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "review not found"})
+		c.JSON(http.StatusNotFound, gin.H{
+			"code":    404,
+			"message": "review not found",
+		})
 		return
 	}
 
 	// check ownership
 	if review.UserID != userID {
-		c.JSON(http.StatusForbidden, gin.H{"error": "unauthorized"})
+		c.JSON(http.StatusForbidden, gin.H{
+			"code":    403,
+			"message": "unauthorized",
+		})
 		return
 	}
 
 	h.db.Delete(&review)
-	c.JSON(http.StatusOK, gin.H{"message": "deleted"})
+	c.JSON(http.StatusOK, gin.H{
+		"code":    200,
+		"message": "deleted",
+	})
 }

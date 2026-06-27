@@ -5,17 +5,24 @@ import (
 	"codecuisine-backend/internal/database"
 	"codecuisine-backend/internal/handlers"
 	"codecuisine-backend/internal/middleware"
+	"codecuisine-backend/internal/service"
+	"log"
 
-	"fmt"
+	"os"
 
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 )
 
 func main() {
-	// load env variables
-	cfg := config.Load()
 
-	fmt.Println("DSN:", cfg.DSN())
+	// load env files
+	if err := godotenv.Load(); err != nil {
+		log.Println("Warning: .env file not found, using system env")
+	}
+
+	// load configuration from environment variables
+	cfg := config.Load()
 
 	// connect to mysql
 	db, err := database.Connect(cfg.DSN())
@@ -30,13 +37,34 @@ func main() {
 	// enable CORS middleware
 	r.Use(middleware.CORS())
 
+	// get apiKey from environment
+	apiKey := os.Getenv("GOOGLE_PLACES_API_KEY")
+	if apiKey == "" {
+		log.Fatal("GOOGLE_PLACES_API_KEY environment variable is required")
+	}
+
+	searchService := service.NewSearchService(db, apiKey)
+
+	// start cache cleanup (once an hour automatically)
+	go service.StartCacheCleanup(searchService)
+
 	// all api routes start with /api
 	api := r.Group("/api")
 	{
 		// create handlers
+		imageService, err := service.NewImageService(
+			os.Getenv("CLOUDINARY_CLOUD_NAME"),
+			os.Getenv("CLOUDINARY_API_KEY"),
+			os.Getenv("CLOUDINARY_API_SECRET"),
+		)
+		if err != nil {
+			log.Fatal("failed to init cloudinary:", err)
+		}
+
 		authHandler := handlers.NewAuthHandler(db, cfg.JWTSecret)
-		reviewHandler := handlers.NewReviewHandler(db)
-		verificationHandler := handlers.NewVerificationHandler(db)
+		reviewHandler := handlers.NewReviewHandler(db, searchService)
+		verificationHandler := handlers.NewVerificationHandler(db, searchService, imageService)
+		searchHandler := handlers.NewSearchHandler(service.NewSearchService(db, apiKey))
 
 		// public routes - no login needed
 		auth := api.Group("/auth")
@@ -59,6 +87,8 @@ func main() {
 			protected.PUT("/reviews/:id", reviewHandler.Update)
 			protected.DELETE("/reviews/:id", reviewHandler.Delete)
 			protected.POST("/verifications/upload", verificationHandler.UploadReceipt)
+			protected.GET("/search/restaurants", searchHandler.SearchRestaurants)
+			protected.GET("/search/cuisines", searchHandler.GetCuisineTypes)
 		}
 	}
 

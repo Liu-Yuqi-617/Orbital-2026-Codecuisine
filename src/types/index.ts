@@ -72,4 +72,5 @@ export interface Restaurant {
   address: string;
   cuisineType: string;
   priceRange: number;
+  score: number;
 }

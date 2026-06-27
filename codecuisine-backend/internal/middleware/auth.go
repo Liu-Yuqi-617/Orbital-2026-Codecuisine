@@ -70,8 +70,15 @@ func JWTAuth(secret string) gin.HandlerFunc {
 	}
 }
 
-// GetUserID extracts user id from context
+// GetUserID extracts user id from context (for protected routes only)
 func GetUserID(c *gin.Context) uint {
-	userID, _ := c.Get("userID")
-	return userID.(uint)
+	userID, exists := c.Get("userID")
+	if !exists {
+		return 0
+	}
+	id, ok := userID.(uint)
+	if !ok {
+		return 0
+	}
+	return id
 }

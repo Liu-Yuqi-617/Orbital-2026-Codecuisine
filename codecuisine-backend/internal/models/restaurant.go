@@ -29,8 +29,19 @@ type Restaurant struct {
 	// Contact phone number in international or local format
 	Phone string `gorm:"size:20" json:"phone"`
 
-	// Weekly opening hours stored as JSON string
-	OpeningHours string `gorm:"type:json" json:"openingHours"`
+	// Cover photo of the restaurant
+	PhotoURL string `json:"photo_url"`
+
+	// Different aspects of partial scores
+	AvgTaste            float64 `gorm:"default:0" json:"avg_taste"`
+	AvgValue            float64 `gorm:"default:0" json:"avg_value"`
+	AvgAmbiance         float64 `gorm:"default:0" json:"avg_ambiance"`
+	CompositeScore      float64 `gorm:"default:0;index" json:"composite_score"`
+	VerifiedReviewCount int     `gorm:"default:0" json:"verified_review_count"`
+	TotalReviewCount    int     `gorm:"default:0" json:"total_review_count"`
+
+	// Trust weigted score for each restaurant
+	TrustWeightedScore float64 `gorm:"default:0;index" json:"trust_weighted_score"`
 
 	// Record creation and update timestamp (GORM auto-populates on insert)
 	CreatedAt time.Time `json:"createdAt"`
