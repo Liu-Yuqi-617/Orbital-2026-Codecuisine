@@ -20,13 +20,14 @@ Users can:
 * Submit proof-of-dine verification
 * Upload food and restaurant images
 * Browse community reviews and discover new restaurants
+* Search and filter restaurants dynamically
+* Evaluate review by its dining verification
 
 Future versions will allow users to:
 
 * Like and comment on reviews
-* Evaluate review quality and trustworthiness
 * Save favorite restaurants to a personal wishlist
-* Search and filter restaurants dynamically
+* Evaluate review by its Quality & Trust Score
 
 ---
 
@@ -39,7 +40,8 @@ CodeCuisine aims to provide a more trustworthy and informative food discovery ex
 * Multi-dimensional rating systems
 * Proof-of-dine verification
 * Review quality assessment
-* Personalized restaurant discovery
+* Personalized quick-saved wishlist
+* Dynamic search & filter system
 
 ---
 
@@ -114,7 +116,7 @@ Browse reviews and discover restaurants through community-generated content.
 
 ## Current Progress
 
-### Milestone 1
+### Milestone 2
 
 Completed:
 
@@ -124,16 +126,14 @@ Completed:
 * Basic Frontend Interface
 * Review Submission Workflow
 * Image Upload Functionality
+* Dynamic Search & Filter Feed
+* dining verification
 * ............
 
 ### Planned for Future Milestones
 
-
-* Dynamic Search & Filter Feed
 * Quick-Save Wishlist
 * Review Quality & Trust Scoring
-* Like & Comment System
-* Personalized Recommendations
 
 ---
 
@@ -180,13 +180,8 @@ backend/
 
 ## Future Features
 
-* Dynamic Search & Filter Feed
 * Quick-Save Wishlist
 * Review Quality & Trust Scoring
-* Like & Comment System
-* Personalized Restaurant Recommendations
-* Restaurant Image Upload
-* User Profile Management
 
 ---
 
@@ -207,5 +202,11 @@ backend/
 * Review Page
   <img width="1274" height="1120" alt="image" src="https://github.com/user-attachments/assets/5e78ff0c-8c81-4d63-aec2-77443689fe7a" />
   Users can create food reviews, provide multi-dimensional ratings, and upload images as proof of their dining experience.
+  And the review will also showcase whether it is verified.
+
+* Dynamic Search & Filter Page
+  <img width="1220" height="884" alt="image" src="https://github.com/user-attachments/assets/c0e263b5-80ae-4adc-8447-526634e96ed0" />
+  Users can search for restaurant reviews, and filter the results by "verified only" / "minimum rating".
+
 
 More screenshots will be added in future milestones.
