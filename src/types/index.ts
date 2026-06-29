@@ -44,6 +44,8 @@ export interface Review {
   createdAt: string;
   updatedAt: string;
   user?: User;
+  restaurant?: SimpleRestaurant;
+  verification?: Verification;
 }
 
 export interface CreateReviewRequest {
@@ -55,22 +57,63 @@ export interface CreateReviewRequest {
   body: string;
 }
 
+// Search types
+export interface SearchRequest {
+  query?: string;
+  lat: number;
+  lng: number;
+  radius?: number;
+  cuisine?: string;
+  price_level?: number;
+  min_score?: number;
+  verified_only?: boolean;
+  sort_by?: 'composite' | 'trust' | 'distance' | 'popularity';
+  page?: number;
+  page_size?: number;
+}
+
+export interface SimpleRestaurant {
+  id: number;
+  place_id: string;
+  name: string;
+  address: string;
+  lat: number;
+  lng: number;
+  cuisine_type: string;
+  price_level: number;
+  photo_url: string;
+  distance: number;
+  avg_taste: number;
+  avg_value: number;
+  avg_ambiance: number;
+  composite_score: number;
+  trust_weighted_score: number;
+  verified_review_count: number;
+  total_review_count: number;
+}
+
+export interface SearchResponse {
+  total: number;
+  page: number;
+  page_size: number;
+  restaurants: SimpleRestaurant[];
+}
+
 // Verification types
 export interface Verification {
   id: number;
   reviewId: number;
-  type: string;
-  imageUrl: string;
-  status: string;
+  type: 'receipt' | 'gps' | 'photo_metadata';
+  imageUrl?: string;
+  gpsLatitude?: number;
+  gpsLongitude?: number;
+  status: 'pending' | 'approved' | 'rejected';
+  processedAt?: string;
   createdAt: string;
 }
 
-// Restaurant types
-export interface Restaurant {
-  id: number;
-  name: string;
-  address: string;
-  cuisineType: string;
-  priceRange: number;
-  score: number;
+export interface GPSCheckinRequest {
+  reviewId: number;
+  latitude: number;
+  longitude: number;
 }

@@ -48,7 +48,6 @@ function Register() {
                 confirm_password: confirm,
             })
             if (res.data.code == 200) {
-                alert("Register successfully");
                 navigate("/login");
             } else {
                 setError(res.data.message);

@@ -3,15 +3,25 @@ function FilterPanel({
     setVerifiedOnly,
     minRating,
     setMinRating,
+    cuisine,
+    setCuisine,
+    priceLevel,
+    setPriceLevel,
+    cuisines,
 }: {
     verifiedOnly: boolean;
-    setVerifiedOnly: (value: boolean)=> void;
+    setVerifiedOnly: (value: boolean) => void;
     minRating: number;
     setMinRating: (value: number) => void;
+    cuisine: string;
+    setCuisine: (value: string) => void;
+    priceLevel: number;
+    setPriceLevel: (value: number) => void;
+    cuisines: string[];
 }) {
     return (
-        <div>
-            
+        <div style={{ display: "flex", gap: "20px", alignItems: "center" }}>
+
             <label>
                 <input
                     type="checkbox"
@@ -24,17 +34,14 @@ function FilterPanel({
                 Verified Reviews Only
             </label>
 
-            <br />
-            <br />
-
-            <label> 
-
+            <label>
                 Minimum Rating:
                 <input
                     type="number"
                     min="1"
                     max="5"
-                    style={{ marginLeft: "10px", width: "50px" }}
+                    step="0.5"
+                    style={{ marginLeft: "5px", width: "30px" }}
                     value={minRating}
                     onChange={(e) =>
                         setMinRating(Number(e.target.value))
@@ -42,7 +49,39 @@ function FilterPanel({
                 />
             </label>
 
+            <label>
+                Cuisine:
+                <select
+                    value={cuisine}
+                    onChange={(e) => setCuisine(e.target.value)}
+                    style={{ padding: "4px 8px" }}
+                >
+                    <option value="">All Cuisines</option>
+                    {(Array.isArray(cuisines) ? cuisines : []).map((c) => (
+                        <option key={c} value={c}>
+                            {String(c).charAt(0).toUpperCase() + String(c).slice(1)}
+                        </option>
+                    ))}
+                </select>
+            </label>
+
+            <label>
+                Price:
+                <select
+                    value={priceLevel}
+                    onChange={(e) => setPriceLevel(parseInt(e.target.value))}
+                    style={{ padding: "4px 8px" }}
+                >
+                    <option value={0}>Any</option>
+                    <option value={1}>$</option>
+                    <option value={2}>$$</option>
+                    <option value={3}>$$$</option>
+                    <option value={4}>$$$$</option>
+                </select>
+            </label>
+
         </div>
     );
 }
+
 export default FilterPanel;

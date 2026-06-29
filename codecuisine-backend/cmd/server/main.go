@@ -17,7 +17,7 @@ import (
 func main() {
 
 	// load env files
-	if err := godotenv.Load(); err != nil {
+	if err := godotenv.Load(".env"); err != nil {
 		log.Println("Warning: .env file not found, using system env")
 	}
 
@@ -89,6 +89,7 @@ func main() {
 			protected.POST("/verifications/upload", verificationHandler.UploadReceipt)
 			protected.GET("/search/restaurants", searchHandler.SearchRestaurants)
 			protected.GET("/search/cuisines", searchHandler.GetCuisineTypes)
+			protected.POST("/verifications/gps", verificationHandler.GPSCheckin)
 		}
 	}
 

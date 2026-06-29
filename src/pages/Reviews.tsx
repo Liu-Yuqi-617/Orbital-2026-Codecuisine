@@ -1,57 +1,102 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ReviewForm from "../components/ReviewForm";
 import ReviewList from "../components/ReviewList";
 import Navbar from "../components/Navbar";
 import { useAuth } from "../context/AuthContext";
+import { createReview, getMyReviews, uploadReceipt } from "../api";
+import type { Review, CreateReviewRequest } from "../types";
+
+interface ReviewFormData {
+  restaurantId: number;
+  title: string;
+  body: string;
+  tasteRating: number;
+  valueRating: number;
+  ambianceRating: number;
+  receipt?: File;
+}
 
 export default function Reviews() {
-  const [reviews, setReviews] = useState<any[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [submitLoading, setSubmitLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
 
-  async function addReview(review: any) {
-    if (review.orderID.trim() === "") {
-      alert("Order ID is required for verification");
+  async function loadReviews() {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const res = await getMyReviews();
+      setReviews(res.data);
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Failed to load reviews");
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    loadReviews();
+  }, []);
+
+  async function addReview(reviewData: ReviewFormData) {
+    if (!user) {
+      alert("Please login first");
       return;
     }
 
-    const formData = new FormData();
-
-    formData.append("orderID", review.orderID);
-    formData.append("title", review.title);
-    formData.append("taste", review.taste);
-    formData.append("value", review.value);
-    formData.append("ambiance", review.ambiance);
-
-    if (review.image) {
-      formData.append("image", review.image);
+    if (!reviewData.restaurantId || reviewData.restaurantId <= 0) {
+      alert("Please select a restaurant");
+      return;
     }
 
-    formData.append("email", user?.email || "anonymous");
+    if (reviewData.title.trim() === "") {
+      alert("Title is required");
+      return;
+    }
+
+    setSubmitLoading(true);
 
     try {
-      const res = await fetch("http://localhost:3001/api/review", // should be backend URL
-        {
-          method: "POST",
-          body: formData,
-        });
+      const reviewLoad: CreateReviewRequest = {
+        restaurantId: reviewData.restaurantId,
+        tasteRating: reviewData.tasteRating,
+        valueRating: reviewData.valueRating,
+        ambianceRating: reviewData.ambianceRating,
+        title: reviewData.title,
+        body: reviewData.body || "",
+      };
 
-      const data = await res.json();
+      const res = await createReview(reviewLoad);
+      const newReview = res.data;
 
-      if (!res.ok) {
-        alert(data.error);
-        return;
+      if (reviewData.receipt) {
+        try {
+          await uploadReceipt(newReview.id, reviewData.receipt);
+          newReview.isVerified = true;
+        } catch (uploadErr: any) {
+          console.error("Receipt upload failed:", uploadErr);
+          alert("Review created, but receipt upload failed. You can upload it later.");
+        }
       }
 
-      setReviews(prev => [...prev, data]);
+      setReviews((prev) => [newReview, ...prev]);
 
-    } catch (err) {
+      await loadReviews();
+
+    } catch (err: any) {
       console.error(err);
-      alert("Failed to submit review");
+      const msg = err.response?.data?.message || "Failed to submit review";
+      alert(msg);
+      setError(msg);
+    } finally {
+      setSubmitLoading(false);
     }
   }
 
   return (
-    <div>
+    <div style={{ maxWidth: "900px", padding: "20px" }}>
       <Navbar />
       <h1>Restaurant Reviews</h1>
 
@@ -67,15 +112,34 @@ export default function Reviews() {
         <p><strong>Taste</strong> – How good the food tastes.</p>
         <p><strong>Value</strong> – Whether the food is worth the price.</p>
         <p><strong>Ambiance</strong> – The atmosphere, cleanliness, and dining experience.</p>
-        <p><em>Note: Reviews with duplicate Order IDs will be marked as unverified.</em></p>
+        <p><em>Tip: Upload a receipt photo to verify your visit and boost your trust score!</em></p>
       </div>
 
-      <ReviewForm addReview={addReview} />
+      <div style={{ marginBottom: "30px" }}>
+        <h2>Write a Review</h2>
+        <ReviewForm addReview={addReview} isLoading={submitLoading} />
+      </div>
 
-      <ReviewList reviews={reviews} />
+      {error && (
+        <div
+          style={{
+            color: "red",
+            padding: "12px",
+            marginBottom: "20px",
+          }}
+        >
+          {error}
+        </div>
+      )}
 
-
-
+      <div>
+        <h2>My Reviews ({reviews.length})</h2>
+        {isLoading ? (
+          <p>Loading reviews...</p>
+        ) : (
+          <ReviewList reviews={reviews} />
+        )}
+      </div>
     </div>
   );
 }

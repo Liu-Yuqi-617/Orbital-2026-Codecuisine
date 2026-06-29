@@ -43,38 +43,38 @@ func (s *SearchService) Search(ctx context.Context, req dto.SearchRequest) (*dto
 		req.Page = 1
 	}
 	if req.PageSize == 0 {
-		req.PageSize = 20
+		req.PageSize = 10
 	}
 	if req.SortBy == "" {
 		req.SortBy = "trust"
 	}
 
-	// 1. Try to read from cache
+	// Try to read from cache
 	cacheKey := s.generateCacheKey(req)
 	cached, err := s.getFromCache(cacheKey)
 	if err == nil && cached != nil {
 		return s.paginateCache(cached, req.Page, req.PageSize), nil
 	}
 
-	// 2. Get base data from Google Places
+	// Get base data from Google Places
 	places, err := s.placesClient.SearchNearby(ctx, req.Lat, req.Lng, req.Radius, req.Query)
 	if err != nil {
 		// Degrade: return existing data from database
 		return s.searchFromDB(req)
 	}
 
-	// 3. Sync/update to local database
+	// Update to local database
 	restaurants := s.syncPlacesToDB(places)
 
-	// 4. Apply local filtering and sorting
+	// Apply local filtering and sorting
 	filtered := s.applyFilters(restaurants, req)
 	sorted := s.applySorting(filtered, req.SortBy, req.Lat, req.Lng)
 
-	// 5. Write to cache
+	// Write to cache
 	fullResponse := s.paginateResults(sorted, 1, len(sorted), req)
 	s.saveToCache(cacheKey, fullResponse.Restaurants)
 
-	// 6. Return paginated results
+	// Return paginated results
 	return s.paginateResults(sorted, req.Page, req.PageSize, req), nil
 }
 

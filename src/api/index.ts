@@ -1,7 +1,15 @@
 import axios from 'axios';
 import type {
-  User, RegisterRequest, LoginRequest, AuthResponse,
-  Review, CreateReviewRequest, Verification
+  User,
+  RegisterRequest,
+  LoginRequest,
+  AuthResponse,
+  Review,
+  CreateReviewRequest,
+  Verification,
+  SearchRequest,
+  SearchResponse,
+  GPSCheckinRequest,
 } from '../types';
 
 const API_BASE_URL = 'http://localhost:8080/api';
@@ -19,6 +27,17 @@ api.interceptors.request.use((config) => {
   }
   return config;
 });
+
+// Axios response interceptor
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token');
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  });
 
 // POST /api/auth/register
 export const register = (data: RegisterRequest) => {
@@ -60,6 +79,16 @@ export const deleteReview = (id: number) => {
   return api.delete(`/reviews/${id}`);
 };
 
+// GET /api/search/restaurants
+export const searchRestaurants = (params: SearchRequest) => {
+  return api.get<SearchResponse>('/search/restaurants', { params });
+};
+
+// GET /api/search/cuisines
+export const getCuisineTypes = () => {
+  return api.get('/search/cuisines');
+};
+
 // POST /api/verifications/upload
 export const uploadReceipt = (reviewId: number, file: File) => {
   const formData = new FormData();
@@ -73,6 +102,11 @@ export const uploadReceipt = (reviewId: number, file: File) => {
 // GET /api/reviews/:reviewId/verification
 export const getVerification = (reviewId: number) => {
   return api.get<Verification>(`/reviews/${reviewId}/verification`);
+};
+
+// POST /api/verifications/gps
+export const gpsCheckin = (data: GPSCheckinRequest) => {
+  return api.post<Verification>('/verifications/gps', data);
 };
 
 export default api;
