@@ -1,145 +1,447 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import ReviewForm from "../components/ReviewForm";
 import ReviewList from "../components/ReviewList";
 import Navbar from "../components/Navbar";
 import { useAuth } from "../context/AuthContext";
-import { createReview, getMyReviews, uploadReceipt } from "../api";
-import type { Review, CreateReviewRequest } from "../types";
+import type { Review } from "../types";
 
-interface ReviewFormData {
-  restaurantId: number;
-  title: string;
-  body: string;
-  tasteRating: number;
-  valueRating: number;
-  ambianceRating: number;
-  receipt?: File;
-}
 
 export default function Reviews() {
-  const [reviews, setReviews] = useState<Review[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [submitLoading, setSubmitLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const { user } = useAuth();
 
-  async function loadReviews() {
-    setIsLoading(true);
-    setError(null);
+
+  const [reviews, setReviews] =
+    useState<Review[]>([]);
+
+
+  const [isLoading, setIsLoading] =
+    useState(false);
+
+
+  const { user } =
+    useAuth();
+
+
+
+
+  async function addReview(review: any) {
+
+
+    const formData =
+      new FormData();
+
+
+
+    formData.append(
+      "restaurantId",
+      review.restaurantId.toString()
+    );
+
+
+    formData.append(
+      "title",
+      review.title
+    );
+
+
+    formData.append(
+      "body",
+      review.body
+    );
+
+
+    formData.append(
+      "tasteRating",
+      review.taste.toString()
+    );
+
+
+    formData.append(
+      "valueRating",
+      review.value.toString()
+    );
+
+
+    formData.append(
+      "ambianceRating",
+      review.ambiance.toString()
+    );
+
+
+
+    if (review.receipt) {
+
+      formData.append(
+        "receipt",
+        review.receipt
+      );
+
+    }
+
+
+
+    if (user) {
+
+      formData.append(
+        "email",
+        user.email
+      );
+
+    }
+
+
+
+
     try {
-      const res = await getMyReviews();
-      setReviews(res.data);
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to load reviews");
-    } finally {
-      setIsLoading(false);
-    }
-  }
 
-  useEffect(() => {
-    loadReviews();
-  }, []);
 
-  async function addReview(reviewData: ReviewFormData) {
-    if (!user) {
-      alert("Please login first");
-      return;
-    }
+      setIsLoading(true);
 
-    if (!reviewData.restaurantId || reviewData.restaurantId <= 0) {
-      alert("Please select a restaurant");
-      return;
-    }
 
-    if (reviewData.title.trim() === "") {
-      alert("Title is required");
-      return;
-    }
 
-    setSubmitLoading(true);
+      const res =
+        await fetch(
+          "http://localhost:3001/api/review",
+          {
+            method: "POST",
+            body: formData,
+          }
+        );
 
-    try {
-      const reviewLoad: CreateReviewRequest = {
-        restaurantId: reviewData.restaurantId,
-        tasteRating: reviewData.tasteRating,
-        valueRating: reviewData.valueRating,
-        ambianceRating: reviewData.ambianceRating,
-        title: reviewData.title,
-        body: reviewData.body || "",
-      };
 
-      const res = await createReview(reviewLoad);
-      const newReview = res.data;
 
-      if (reviewData.receipt) {
-        try {
-          await uploadReceipt(newReview.id, reviewData.receipt);
-          newReview.isVerified = true;
-        } catch (uploadErr: any) {
-          console.error("Receipt upload failed:", uploadErr);
-          alert("Review created, but receipt upload failed. You can upload it later.");
-        }
+      const data =
+        await res.json();
+
+
+
+      if (!res.ok) {
+
+        alert(
+          data.message ||
+          "Failed to submit review"
+        );
+
+        return;
+
       }
 
-      setReviews((prev) => [newReview, ...prev]);
 
-      await loadReviews();
 
-    } catch (err: any) {
-      console.error(err);
-      const msg = err.response?.data?.message || "Failed to submit review";
-      alert(msg);
-      setError(msg);
-    } finally {
-      setSubmitLoading(false);
+      setReviews(
+        prev => [
+          ...prev,
+          data,
+        ]
+      );
+
+
+
     }
+
+    catch (error) {
+
+      console.error(error);
+
+      alert(
+        "Failed to submit review"
+      );
+
+    }
+
+
+    finally {
+
+      setIsLoading(false);
+
+    }
+
+
   }
 
+
+
+
+
   return (
-    <div style={{ maxWidth: "900px", padding: "20px" }}>
+
+    <>
+
       <Navbar />
-      <h1>Restaurant Reviews</h1>
+
 
       <div
+
         style={{
-          border: "1px solid #ccc",
-          padding: "12px",
-          marginBottom: "20px",
-          borderRadius: "8px",
+
+          minHeight: "100vh",
+
+          background: "#F8F5F0",
+
+          padding: "40px 20px",
+
         }}
+
       >
-        <h3>Rating Guide</h3>
-        <p><strong>Taste</strong> – How good the food tastes.</p>
-        <p><strong>Value</strong> – Whether the food is worth the price.</p>
-        <p><strong>Ambiance</strong> – The atmosphere, cleanliness, and dining experience.</p>
-        <p><em>Tip: Upload a receipt photo to verify your visit and boost your trust score!</em></p>
-      </div>
 
-      <div style={{ marginBottom: "30px" }}>
-        <h2>Write a Review</h2>
-        <ReviewForm addReview={addReview} isLoading={submitLoading} />
-      </div>
 
-      {error && (
+
         <div
-          style={{
-            color: "red",
-            padding: "12px",
-            marginBottom: "20px",
-          }}
-        >
-          {error}
-        </div>
-      )}
 
-      <div>
-        <h2>My Reviews ({reviews.length})</h2>
-        {isLoading ? (
-          <p>Loading reviews...</p>
-        ) : (
-          <ReviewList reviews={reviews} />
-        )}
+          style={{
+
+            maxWidth: "1000px",
+
+            margin: "0 auto",
+
+          }}
+
+        >
+
+
+          {/* Hero */}
+
+          <div
+            style={{
+              marginBottom: "40px",
+            }}
+          >
+
+            <h1
+              style={{
+                fontSize: "38px",
+                marginBottom: "12px",
+                color: "#2D3436",
+                fontWeight: 800,
+                letterSpacing: "-0.5px",
+              }}
+            >
+              🍽 Restaurant Reviews
+            </h1>
+
+
+            <p
+              style={{
+                color: "#2D3436",
+                fontSize: "19px",
+                fontWeight: 500,
+                lineHeight: "1.6",
+              }}
+            >
+              Discover trusted dining experiences
+              from real customers.
+            </p>
+
+          </div>
+
+
+
+
+
+
+
+
+          {/* Review Form */}
+
+          <section>
+
+
+
+            <h2
+              style={{
+                fontSize: "28px",
+                marginBottom: "15px",
+                color: "#2D3436"
+              }}
+            >
+
+              ✍️ Write a Review
+
+            </h2>
+
+
+
+            <ReviewForm
+
+              addReview={
+                addReview
+              }
+
+              isLoading={
+                isLoading
+              }
+
+            />
+
+
+          </section>
+
+
+
+
+
+
+
+
+
+          {/* Trust Guide */}
+
+          <div
+
+            style={{
+
+              background: "white",
+
+              padding: "25px",
+
+              borderRadius: "18px",
+
+              marginTop: "35px",
+
+              boxShadow:
+                "0 4px 15px rgba(0,0,0,0.06)",
+
+            }}
+
+          >
+
+
+            <h2
+              style={{
+                fontSize: "28px",
+                marginBottom: "15px",
+                color: "#2D3436"
+              }}
+            >
+
+              🛡 Trust Score System
+
+            </h2>
+
+
+
+            <p>
+              Reviews are ranked based on
+              authenticity and detail.
+            </p>
+
+
+
+            <div
+
+              style={{
+
+                display: "grid",
+
+                gridTemplateColumns:
+                  "repeat(3,1fr)",
+
+                gap: "15px",
+
+              }}
+
+            >
+
+
+
+              <div>
+                ✅ Verified Visit
+                <br />
+                +40 points
+              </div>
+
+
+              <div>
+                📷 Receipt Upload
+                <br />
+                +20 points
+              </div>
+
+
+              <div
+              >
+                ✍️ Detailed Review
+                <br />
+                +15 points
+              </div>
+
+
+              <div
+              >
+                ⭐ High Rating
+                <br />
+                +10 points
+              </div>
+
+
+              <div>
+                👤 Registered User
+                <br />
+                +5 points
+              </div>
+
+
+            </div>
+
+
+          </div>
+
+
+
+
+
+
+
+
+
+          {/* Reviews */}
+
+          <section
+
+            style={{
+
+              marginTop: "45px",
+
+            }}
+
+          >
+
+
+            <h2
+              style={{
+                fontSize: "28px",
+                marginBottom: "15px",
+                color: "#2D3436"
+              }}
+            >
+
+              🌟 Latest Reviews
+
+            </h2>
+
+
+
+            <ReviewList
+
+              reviews={
+                reviews
+              }
+
+            />
+
+
+          </section>
+
+
+
+
+        </div>
+
+
       </div>
-    </div>
+
+
+    </>
+
   );
+
 }
