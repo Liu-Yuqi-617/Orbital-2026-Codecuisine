@@ -22,11 +22,6 @@ Users can:
 * Browse community reviews and discover new restaurants
 * Search and filter restaurants dynamically
 * Evaluate review by its dining verification
-
-Future versions will allow users to:
-
-* Like and comment on reviews
-* Save favorite restaurants to a personal wishlist
 * Evaluate review by its Quality & Trust Score
 
 ---
@@ -128,11 +123,6 @@ Completed:
 * Image Upload Functionality
 * Dynamic Search & Filter Feed
 * dining verification
-* ............
-
-### Planned for Future Milestones
-
-* Quick-Save Wishlist
 * Review Quality & Trust Scoring
 
 ---
@@ -178,35 +168,251 @@ backend/
 
 ---
 
-## Future Features
+## 🚀 Core Features
 
-* Quick-Save Wishlist
-* Review Quality & Trust Scoring
+## 1. User Authentication
+
+FoodTrust provides a secure user management system.
+
+### User Registration
+
+<img width="2198" height="1311" alt="屏幕截图 2026-07-21 103504" src="https://github.com/user-attachments/assets/9f956b90-3d6d-42d2-b9fd-1bb6841c45d9" />
+
+Users can create accounts by providing:
+- Username
+- Email address
+- Password
+- Password confirmation
+
+The registration system ensures:
+- Complete user information
+- Valid email format
+- Secure password requirements
+- Correct password confirmation
+
+### User Login
+Registered users can securely access personalized features.
+
+<img width="2007" height="1297" alt="屏幕截图 2026-07-21 103449" src="https://github.com/user-attachments/assets/f62939f7-792d-4401-9950-94c1d243abbc" />
+
+After login, users can:
+- Submit restaurant reviews
+- Track review history
+- View personal trust scores
+- Manage account information
 
 ---
 
-## Screenshots
-* Login Page
-  
-  <img width="788" height="400" alt="image" src="https://github.com/user-attachments/assets/5bb9b4de-bf78-4bdf-bcf9-67e9177bf57a" />
-  Users can log in using their registered credentials.
+# 2. Multi-Dimensional Restaurant Review System
 
-* Register Page
-  <img width="815" height="427" alt="image" src="https://github.com/user-attachments/assets/ba15684a-c6c1-46ee-afe5-5894b56a3192" />
-  New users can create an account through the registration form.
+FoodTrust provides a structured restaurant review experience by allowing users to evaluate restaurants from different perspectives.
 
-* Profile Page
-  <img width="769" height="457" alt="image" src="https://github.com/user-attachments/assets/b393e174-ee97-4fb3-b9e7-137641e5111d" />
-  Displays authenticated user information and account details.
+## Rating Categories
 
-* Review Page
-  <img width="1274" height="1120" alt="image" src="https://github.com/user-attachments/assets/5e78ff0c-8c81-4d63-aec2-77443689fe7a" />
-  Users can create food reviews, provide multi-dimensional ratings, and upload images as proof of their dining experience.
-  And the review will also showcase whether it is verified.
+<img width="2216" height="1324" alt="屏幕截图 2026-07-21 103523" src="https://github.com/user-attachments/assets/0f66c398-3654-4609-88e6-5c0e6f615fe6" />
 
-* Dynamic Search & Filter Page
-  <img width="1220" height="884" alt="image" src="https://github.com/user-attachments/assets/c0e263b5-80ae-4adc-8447-526634e96ed0" />
-  Users can search for restaurant reviews, and filter the results by "verified only" / "minimum rating".
+<img width="1461" height="731" alt="屏幕截图 2026-07-21 103603" src="https://github.com/user-attachments/assets/3dad22e6-ea59-4fcd-aa41-6292a6fdb84a" />
+
+### 🍜 Taste Rating
+Evaluates food quality and flavor:
+- Food quality
+- Freshness
+- Cooking style
+- Flavor balance
+
+### 💰 Value Rating
+Evaluates price-performance:
+- Portion size
+- Price fairness
+- Overall cost performance
+
+### 🌿 Ambiance Rating
+Evaluates dining environment:
+- Cleanliness
+- Atmosphere
+- Interior design
+- Dining comfort
+
+## Review Content
+
+Users can provide:
+- Review title
+- Detailed description
+- Restaurant information
+- Dining experience
+
+This helps users understand both numerical ratings and personal experiences.
+
+---
+
+# 3. Review Verification System
+
+FoodTrust improves review reliability by allowing users to verify their dining experiences.
+
+## Receipt Verification
+
+<img width="1507" height="926" alt="屏幕截图 2026-07-21 103550" src="https://github.com/user-attachments/assets/afb0a785-e275-4773-9b08-bdee92854334" />
+
+Users can upload receipt images as proof of dining.
+
+Supported verification information:
+- Receipt images
+- Verification status
+- Verification type
+
+## Verification Labels
+
+Reviews are categorized as:
+
+✅ **Verified Review**
+- Supported by valid proof of dining experience
+
+⚪ **Unverified Review**
+- No supporting evidence provided
+
+Verification allows users to distinguish between personal opinions and confirmed experiences.
+
+---
+
+# 4. Reviewer Trust Scoring System
+
+<img width="2020" height="500" alt="屏幕截图 2026-07-21 103611" src="https://github.com/user-attachments/assets/9e5b4abc-bbc9-4426-902b-3f8a79f715b1" />
 
 
-More screenshots will be added in future milestones.
+FoodTrust introduces a credibility system to evaluate reviewer reliability.
+
+Each user receives a:
+
+**Trust Score (0-100)**
+
+Higher scores represent more trustworthy reviewers.
+
+## Trust Levels
+
+| Trust Score | Level |
+|-------------|-------|
+| 80-100 | Expert Critic |
+| 60-79 | Trusted Reviewer |
+| 40-59 | Regular User |
+| 0-39 | Newcomer |
+
+## Improving Trust Score
+
+<img width="1346" height="381" alt="屏幕截图 2026-07-21 103718" src="https://github.com/user-attachments/assets/ce038240-4e7e-4b56-9986-24eed9fa2767" />
+
+Users can increase credibility by:
+
+- Writing more reviews
+- Providing verification evidence
+- Maintaining consistent and high-quality contributions
+
+---
+
+# 5. Personal Profile Dashboard
+
+<img width="1445" height="1098" alt="屏幕截图 2026-07-21 103710" src="https://github.com/user-attachments/assets/11035b2a-f325-4e32-ac91-339e2627df29" />
+
+
+Users can manage their account and track review activity.
+
+## Personal Information
+
+<img width="2241" height="1202" alt="屏幕截图 2026-07-21 103655" src="https://github.com/user-attachments/assets/2f4e7cbe-4cc9-49fa-8867-0cd537451a0a" />
+
+Users can view:
+- Username
+- Email
+- Account creation date
+- Current trust level
+
+## Review Statistics
+
+Dashboard provides:
+
+- Total Reviews
+- Verified Reviews
+- Verification Rate
+- Average Rating Given
+
+Example:
+
+## Review Filtering
+
+<img width="2266" height="1076" alt="屏幕截图 2026-07-21 103631" src="https://github.com/user-attachments/assets/213cd590-5b08-4c70-9c8e-36e0e97f36d6" />
+
+
+Users can filter reviews by:
+
+### Verification Status
+- All reviews
+- Verified reviews only
+
+### Minimum Rating
+Example:
+
+
+### Cuisine Type
+Supported categories:
+- Chinese
+- Japanese
+- Korean
+- Western
+- Italian
+- Indian
+- Thai
+
+### Price Level
+Users can filter restaurants based on expected spending level.
+
+---
+
+# 7. Review Display and Credibility Information
+
+Reviews are displayed through clear review cards.
+
+Each review includes:
+
+## Restaurant Information
+- Restaurant name
+- Restaurant details
+
+## Review Information
+- Review title
+- Written experience
+- Individual ratings
+
+## Credibility Information
+- Verification status
+- Reviewer trust level
+- Reviewer information
+
+---
+
+# 8. Restaurant Comparison
+
+FoodTrust enables users to compare restaurants based on multiple aspects.
+
+| Category | Purpose |
+|-----------|---------|
+| Taste | Compare food quality |
+| Value | Compare price-performance |
+| Ambiance | Compare dining environment |
+| Trust Score | Compare reviewer reliability |
+
+This provides a more comprehensive decision-making experience.
+
+---
+
+# 9. User-Friendly Interface
+
+FoodTrust focuses on providing a simple and intuitive user experience.
+
+Main interface features:
+- Simple navigation
+- Clear review cards
+- Organized rating displays
+- Easy review submission
+- Personalized profile dashboard
+
+---
+
