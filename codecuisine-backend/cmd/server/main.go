@@ -65,6 +65,7 @@ func main() {
 		reviewHandler := handlers.NewReviewHandler(db, searchService)
 		verificationHandler := handlers.NewVerificationHandler(db, searchService, imageService)
 		searchHandler := handlers.NewSearchHandler(service.NewSearchService(db, apiKey))
+		wishlistHandler := handlers.NewWishlistHandler(db)
 
 		// public routes - no login needed
 		auth := api.Group("/auth")
@@ -90,6 +91,9 @@ func main() {
 			protected.GET("/search/restaurants", searchHandler.SearchRestaurants)
 			protected.GET("/search/cuisines", searchHandler.GetCuisineTypes)
 			protected.POST("/verifications/gps", verificationHandler.GPSCheckin)
+			protected.POST("/wishlist", wishlistHandler.AddToWishlist)
+			protected.GET("/wishlist", wishlistHandler.GetWishlist)
+			protected.POST("/wishlist//:restaurant_id", wishlistHandler.RemoveFromWishlist)
 		}
 	}
 
