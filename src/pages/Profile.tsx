@@ -117,102 +117,264 @@ export default function Profile() {
         : "N/A";
 
     return (
-        <div className="profile-container">
+        <>
             <Navbar />
 
-            <div className="profile-header">
-                <h1>My Profile</h1>
-                <button
-                    className="logout-btn"
-                    onClick={() => {
-                        logout();
-                        navigate("/login");
+            <div
+                style={{
+                    minHeight: "100vh",
+                    background: "#F8F5F0",
+                    padding: "40px 20px",
+                }}
+            >
+
+                <div
+                    style={{
+                        maxWidth: "1100px",
+                        margin: "0 auto 35px",
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
                     }}
                 >
-                    🚪 Logout
-                </button>
-            </div>
 
-            {isLoading ? (
-                <div className="loading-container">
-                    <p>Loading your profile...</p>
+                    <h1
+                        style={{
+                            color: "#2D3436",
+                            fontSize: "36px",
+                            fontWeight: 800,
+                        }}
+                    >
+                        👤 My Profile
+                    </h1>
+
+
+                    <button
+
+                        onClick={() => {
+                            logout();
+                            navigate("/login");
+                        }}
+
+                        style={{
+
+                            background: "#E67E22",
+
+                            color: "white",
+
+                            border: "none",
+
+                            padding: "12px 22px",
+
+                            borderRadius: "12px",
+
+                            fontSize: "15px",
+
+                            fontWeight: 700,
+
+                            cursor: "pointer",
+
+                        }}
+
+                    >
+                        🚪 Logout
+                    </button>
+
+
                 </div>
-            ) : (
-                <div className="profile-grid">
-                    <div className="profile-card" style={{ textAlign: "center" }}>
-                        <div className="avatar">
-                            {trustLevel.icon}
-                        </div>
 
-                        <h2>{username}</h2>
-
-                        <div
-                            className="trust-badge"
-                            style={{
-                                color: trustLevel.color,
-                            }}
-                        >
-                            {trustLevel.label}
-                        </div>
-
-                        <p className="email-text">{email}</p>
-                        <p className="joined-text">Joined: {joinedDate}</p>
+                {isLoading ? (
+                    <div className="loading-container">
+                        <p>Loading your profile...</p>
                     </div>
+                ) : (
+                    <div
 
-                    <div className="profile-card">
-                        <h3>Trust Score</h3>
+                        style={{
 
-                        <div className="trust-section">
-                            <div className="progress-bar-container">
+                            maxWidth: "1100px",
+
+                            margin: "auto",
+
+                            display: "grid",
+
+                            gridTemplateColumns:
+                                "350px 1fr",
+
+                            gap: "25px",
+
+                        }}
+
+                    >
+                        <div className="profile-card" style={{ textAlign: "center" }}>
+                            <div className="avatar">
+                                {trustLevel.icon}
+                            </div>
+
+                            <h2
+
+                                style={{
+
+                                    color: "#2D3436",
+
+                                    fontSize: "26px",
+
+                                }}
+
+                            >
+
+                                {username}
+
+                            </h2>
+
+                            <div
+                                className="trust-badge"
+                                style={{
+                                    color: trustLevel.color,
+                                }}
+                            >
+                                {trustLevel.label}
+                            </div>
+
+                            <p
+
+                                style={{
+
+                                    color: "#636E72",
+
+                                    fontSize: "15px"
+
+                                }}
+
+                            >
+                                <p className="joined-text">Joined: {joinedDate}</p>
+                            </p>
+                        </div>
+
+                        <div style={{
+
+                            background: "#FFFFFF",
+
+                            borderRadius: "20px",
+
+                            padding: "30px",
+
+                            boxShadow:
+                                "0 8px 25px rgba(0,0,0,0.08)",
+
+                        }}>
+                            <h3
+
+                                style={{
+
+                                    color: "#2D3436",
+
+                                    fontSize: "22px"
+
+                                }}
+
+                            >
+
+                                🛡 Trust Score
+
+                            </h3>
+
+                            <div className="trust-section">
                                 <div
-                                    className="progress-bar-fill"
+
                                     style={{
-                                        width: `${trustScore}%`,
+
+                                        height: "35px",
+
+                                        background: "#F0E8DE",
+
+                                        borderRadius: "20px",
+
+                                        overflow: "hidden",
+
+                                        position: "relative",
+
                                     }}
+
                                 >
+                                    <div
+
+                                        style={{
+
+                                            width: `${trustScore}%`,
+
+                                            height: "100%",
+
+                                            background: "#2980B9",
+
+                                            borderRadius: "20px",
+
+                                        }}
+
+                                    >
+                                    </div>
+
+                                    <div
+
+                                        style={{
+
+                                            position: "absolute",
+
+                                            top: "7px",
+
+                                            left: "50%",
+
+                                            transform: "translateX(-50%)",
+
+                                            fontWeight: 700,
+
+                                            color: "#2D3436",
+
+                                        }}
+
+                                    >
+                                        {trustScore}/100
+                                    </div>
                                 </div>
-                                <div className="progress-bar-text">
-                                    {trustScore} / 100
+
+                                <div className="stats-grid">
+                                    <StatCard
+                                        label="Total Reviews"
+                                        value={stats.totalReviews}
+                                        icon="📝"
+                                    />
+                                    <StatCard
+                                        label="Verified Reviews"
+                                        value={stats.verifiedReviews}
+                                        icon="✅"
+                                    />
+                                    <StatCard
+                                        label="Verification Rate"
+                                        value={`${stats.verificationRate}%`}
+                                        icon="📊"
+                                    />
+                                    <StatCard
+                                        label="Avg Rating Given"
+                                        value={stats.avgRating.toFixed(1)}
+                                        icon="⭐"
+                                    />
                                 </div>
                             </div>
 
-                            <div className="stats-grid">
-                                <StatCard
-                                    label="Total Reviews"
-                                    value={stats.totalReviews}
-                                    icon="📝"
-                                />
-                                <StatCard
-                                    label="Verified Reviews"
-                                    value={stats.verifiedReviews}
-                                    icon="✅"
-                                />
-                                <StatCard
-                                    label="Verification Rate"
-                                    value={`${stats.verificationRate}%`}
-                                    icon="📊"
-                                />
-                                <StatCard
-                                    label="Avg Rating Given"
-                                    value={stats.avgRating.toFixed(1)}
-                                    icon="⭐"
-                                />
+                            <div className="trust-tips">
+                                <strong>How to improve your trust score:</strong>
+                                <ul>
+                                    <li>Write more reviews (+base points)</li>
+                                    <li>Upload receipt photos for verification (+40% bonus)</li>
+                                    <li>Use GPS check-in when visiting (+diversity bonus)</li>
+                                    <li>Higher trust = your reviews carry more weight!</li>
+                                </ul>
                             </div>
-                        </div>
-
-                        <div className="trust-tips">
-                            <strong>How to improve your trust score:</strong>
-                            <ul>
-                                <li>Write more reviews (+base points)</li>
-                                <li>Upload receipt photos for verification (+40% bonus)</li>
-                                <li>Use GPS check-in when visiting (+diversity bonus)</li>
-                                <li>Higher trust = your reviews carry more weight!</li>
-                            </ul>
                         </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )}
+            </div>
+        </>
     );
 }
 
@@ -222,12 +384,77 @@ interface StatCardProps {
     icon: string;
 }
 
-function StatCard({ label, value, icon }: StatCardProps) {
+function StatCard({
+    label,
+    value,
+    icon
+}: StatCardProps) {
+
     return (
-        <div className="stat-card">
-            <div className="stat-icon">{icon}</div>
-            <div className="stat-value">{value}</div>
-            <div className="stat-label">{label}</div>
+
+        <div
+
+            style={{
+
+                background: "#F8F5F0",
+
+                padding: "18px",
+
+                borderRadius: "15px",
+
+                textAlign: "center",
+
+            }}
+
+        >
+
+            <div
+                style={{
+                    fontSize: "25px"
+                }}
+            >
+                {icon}
+            </div>
+
+
+            <div
+
+                style={{
+
+                    fontSize: "24px",
+
+                    fontWeight: 800,
+
+                    color: "#2D3436",
+
+                }}
+
+            >
+
+                {value}
+
+            </div>
+
+
+            <div
+
+                style={{
+
+                    color: "#636E72",
+
+                    fontSize: "14px",
+
+                }}
+
+            >
+
+                {label}
+
+            </div>
+
+
         </div>
-    );
+
+    )
+
 }
