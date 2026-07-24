@@ -48,6 +48,9 @@ func main() {
 	// start cache cleanup (once an hour automatically)
 	go service.StartCacheCleanup(searchService)
 
+	// start GPS privacy cleanup (clears GPS coordinates after check-in)
+	go service.StartGPSCleanup(db)
+
 	// all api routes start with /api
 	api := r.Group("/api")
 	{
@@ -64,7 +67,7 @@ func main() {
 		authHandler := handlers.NewAuthHandler(db, cfg.JWTSecret)
 		reviewHandler := handlers.NewReviewHandler(db, searchService)
 		verificationHandler := handlers.NewVerificationHandler(db, searchService, imageService)
-		searchHandler := handlers.NewSearchHandler(service.NewSearchService(db, apiKey))
+		searchHandler := handlers.NewSearchHandler(searchService)
 		wishlistHandler := handlers.NewWishlistHandler(db)
 
 		// public routes - no login needed
@@ -93,7 +96,7 @@ func main() {
 			protected.POST("/verifications/gps", verificationHandler.GPSCheckin)
 			protected.POST("/wishlist", wishlistHandler.AddToWishlist)
 			protected.GET("/wishlist", wishlistHandler.GetWishlist)
-			protected.POST("/wishlist//:restaurant_id", wishlistHandler.RemoveFromWishlist)
+			protected.POST("/wishlist/:restaurant_id", wishlistHandler.RemoveFromWishlist)
 		}
 	}
 

@@ -15,6 +15,9 @@ import (
 	"gorm.io/gorm"
 )
 
+// gpsCleaner is set externally for GPS privacy cleanup
+var gpsCleaner *service.GPSPrivacyCleaner
+
 // VerificationHandler handles receipt uploads
 type VerificationHandler struct {
 	db            *gorm.DB
@@ -119,22 +122,10 @@ func (h *VerificationHandler) UploadReceipt(c *gin.Context) {
 // GetByReview shows verification for a review
 func (h *VerificationHandler) GetByReview(c *gin.Context) {
 	reviewID := c.Param("reviewId")
-	userID := middleware.GetUserID(c)
 
-	// verify ownership
-	var review models.Review
-	result := h.db.Where("id = ? AND user_id = ?", reviewID, userID).First(&review)
-	if result.Error != nil {
-		c.JSON(http.StatusForbidden, gin.H{
-			"code":    403,
-			"message": "unauthorized",
-		})
-		return
-	}
-
-	// find verification
+	// find verification for this review (public access - no ownership check needed)
 	var verification models.Verification
-	result = h.db.Where("review_id = ?", reviewID).First(&verification)
+	result := h.db.Where("review_id = ?", reviewID).First(&verification)
 	if result.Error != nil {
 		c.JSON(http.StatusNotFound, gin.H{
 			"code":    404,
@@ -239,5 +230,26 @@ func (h *VerificationHandler) GPSCheckin(c *gin.Context) {
 		}
 	}()
 
-	c.JSON(200, verification)
+	// GPS PRIVACY: Immediately clear GPS coordinates after successful verification
+	if verification.ID > 0 {
+		if err := h.db.Model(&models.Verification{}).
+			Where("id = ?", verification.ID).
+			Updates(map[string]interface{}{
+				"gps_latitude":  0,
+				"gps_longitude": 0,
+			}).Error; err != nil {
+			log.Printf("Failed to clear GPS data for privacy: %v", err)
+		} else {
+			log.Printf("GPS data cleared for privacy (verification ID: %d)", verification.ID)
+		}
+	}
+
+	c.JSON(200, gin.H{
+		"code":    200,
+		"message": "GPS check-in verified successfully",
+		"data": gin.H{
+			"verified": true,
+			"distance": "within 100 meters",
+		},
+	})
 }

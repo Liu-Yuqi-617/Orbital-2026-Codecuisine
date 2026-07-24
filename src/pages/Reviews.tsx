@@ -1,13 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ReviewForm from "../components/ReviewForm";
 import ReviewList from "../components/ReviewList";
 import Navbar from "../components/Navbar";
-import { useAuth } from "../context/AuthContext";
-import type { Review } from "../types";
+import { createReview, getMyReviews, uploadReceipt } from "../api";
+import type { Review, CreateReviewRequest } from "../types";
 
 
 export default function Reviews() {
-
 
   const [reviews, setReviews] =
     useState<Review[]>([]);
@@ -16,158 +15,69 @@ export default function Reviews() {
   const [isLoading, setIsLoading] =
     useState(false);
 
+  useEffect(() => {
+    loadMyReviews();
+  }, []);
 
-  const { user } =
-    useAuth();
-
-
-
-
-  async function addReview(review: any) {
-
-
-    const formData =
-      new FormData();
-
-
-
-    formData.append(
-      "restaurantId",
-      review.restaurantId.toString()
-    );
-
-
-    formData.append(
-      "title",
-      review.title
-    );
-
-
-    formData.append(
-      "body",
-      review.body
-    );
-
-
-    formData.append(
-      "tasteRating",
-      review.taste.toString()
-    );
-
-
-    formData.append(
-      "valueRating",
-      review.value.toString()
-    );
-
-
-    formData.append(
-      "ambianceRating",
-      review.ambiance.toString()
-    );
-
-
-
-    if (review.receipt) {
-
-      formData.append(
-        "receipt",
-        review.receipt
-      );
-
-    }
-
-
-
-    if (user) {
-
-      formData.append(
-        "email",
-        user.email
-      );
-
-    }
-
-
-
-
+  async function loadMyReviews() {
     try {
-
-
-      setIsLoading(true);
-
-
-
-      const res =
-        await fetch(
-          "http://localhost:3001/api/review",
-          {
-            method: "POST",
-            body: formData,
-          }
-        );
-
-
-
-      const data =
-        await res.json();
-
-
-
-      if (!res.ok) {
-
-        alert(
-          data.message ||
-          "Failed to submit review"
-        );
-
-        return;
-
-      }
-
-
-
-      setReviews(
-        prev => [
-          ...prev,
-          data,
-        ]
-      );
-
-
-
+      const res = await getMyReviews();
+      setReviews(res.data || []);
+    } catch (err) {
+      console.error("Failed to load reviews:", err);
     }
-
-    catch (error) {
-
-      console.error(error);
-
-      alert(
-        "Failed to submit review"
-      );
-
-    }
-
-
-    finally {
-
-      setIsLoading(false);
-
-    }
-
-
   }
 
+  async function addReview(reviewData: {
+    restaurantId: number;
+    title: string;
+    body: string;
+    taste: number;
+    value: number;
+    ambiance: number;
+    receipt?: File;
+  }) {
+    try {
+      setIsLoading(true);
 
+      const createData: CreateReviewRequest = {
+        restaurantId: reviewData.restaurantId,
+        tasteRating: reviewData.taste,
+        valueRating: reviewData.value,
+        ambianceRating: reviewData.ambiance,
+        title: reviewData.title,
+        body: reviewData.body,
+      };
 
+      const res = await createReview(createData);
+      const newReview: Review = res.data;
 
+      if (reviewData.receipt && newReview.id) {
+        try {
+          await uploadReceipt(newReview.id, reviewData.receipt);
+          newReview.isVerified = true;
+        } catch (err) {
+          console.error("Receipt upload failed:", err);
+          alert("Review submitted but receipt upload failed.");
+        }
+      }
+
+      await loadMyReviews();
+      alert("Review submitted successfully!");
+
+    } catch (err: any) {
+      console.error("Failed to submit review:", err);
+      alert(err.response?.data?.message || "Failed to submit review");
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
   return (
 
     <>
 
       <Navbar />
-
 
       <div
 
@@ -183,8 +93,6 @@ export default function Reviews() {
 
       >
 
-
-
         <div
 
           style={{
@@ -197,7 +105,6 @@ export default function Reviews() {
 
         >
 
-
           {/* Hero */}
 
           <div
@@ -208,57 +115,59 @@ export default function Reviews() {
 
             <h1
               style={{
+
                 fontSize: "38px",
+
                 marginBottom: "12px",
+
                 color: "#2D3436",
+
                 fontWeight: 800,
+
                 letterSpacing: "-0.5px",
+
               }}
             >
-              🍽 Restaurant Reviews
+              🍽 My Reviews
             </h1>
-
 
             <p
               style={{
+
                 color: "#2D3436",
+
                 fontSize: "19px",
+
                 fontWeight: 500,
+
                 lineHeight: "1.6",
+
               }}
             >
-              Discover trusted dining experiences
-              from real customers.
+              Manage your dining experiences and verifications.
             </p>
 
           </div>
-
-
-
-
-
-
-
 
           {/* Review Form */}
 
           <section>
 
-
-
             <h2
               style={{
+
                 fontSize: "28px",
+
                 marginBottom: "15px",
+
                 color: "#2D3436"
+
               }}
             >
 
               ✍️ Write a Review
 
             </h2>
-
-
 
             <ReviewForm
 
@@ -272,16 +181,7 @@ export default function Reviews() {
 
             />
 
-
           </section>
-
-
-
-
-
-
-
-
 
           {/* Trust Guide */}
 
@@ -304,12 +204,15 @@ export default function Reviews() {
 
           >
 
-
             <h2
               style={{
+
                 fontSize: "28px",
+
                 marginBottom: "15px",
-                color: "#2D3436"
+
+                color: "#2D3436",
+
               }}
             >
 
@@ -317,14 +220,10 @@ export default function Reviews() {
 
             </h2>
 
-
-
             <p>
               Reviews are ranked based on
               authenticity and detail.
             </p>
-
-
 
             <div
 
@@ -341,21 +240,17 @@ export default function Reviews() {
 
             >
 
-
-
               <div>
                 ✅ Verified Visit
                 <br />
                 +40 points
               </div>
 
-
               <div>
                 📷 Receipt Upload
                 <br />
                 +20 points
               </div>
-
 
               <div
               >
@@ -364,7 +259,6 @@ export default function Reviews() {
                 +15 points
               </div>
 
-
               <div
               >
                 ⭐ High Rating
@@ -372,26 +266,15 @@ export default function Reviews() {
                 +10 points
               </div>
 
-
               <div>
                 👤 Registered User
                 <br />
                 +5 points
               </div>
 
-
             </div>
 
-
           </div>
-
-
-
-
-
-
-
-
 
           {/* Reviews */}
 
@@ -414,11 +297,9 @@ export default function Reviews() {
               }}
             >
 
-              🌟 Latest Reviews
+              🌟 My Reviews
 
             </h2>
-
-
 
             <ReviewList
 
@@ -428,17 +309,11 @@ export default function Reviews() {
 
             />
 
-
           </section>
-
-
-
 
         </div>
 
-
       </div>
-
 
     </>
 

@@ -1,10 +1,16 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import FilterPanel from "../components/FilterPanel";
+import { searchRestaurants, getCuisineTypes } from "../api";
+import type { SimpleRestaurant, SearchRequest } from "../types";
+import { useNavigate } from "react-router-dom";
 
 function Search() {
+    const navigate = useNavigate();
     const [keyword, setKeyword] = useState("");
-
+    const [restaurants, setRestaurants] = useState<SimpleRestaurant[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [cuisines, setCuisines] = useState<string[]>([]);
     const [filters, setFilters] = useState({
         verifiedOnly: false,
         minRating: 1,
@@ -12,35 +18,60 @@ function Search() {
         priceLevel: 0,
     });
 
-    const cuisines = [
-        "Chinese",
-        "Japanese",
-        "Korean",
-        "Western",
-        "Italian",
-        "Indian",
-        "Thai",
-    ];
-
-    function handleSearch() {
-        console.log("Search clicked with:", {
-            keyword,
-            verifiedOnly: filters.verifiedOnly,
-            minRating: filters.minRating,
-            cuisine: filters.cuisine,
-            priceLevel: filters.priceLevel,
+    useEffect(() => {
+        getCuisineTypes().then(res => {
+            setCuisines(res.data.cuisines || []);
+        }).catch(() => {
+            setCuisines(["chinese", "japanese", "korean", "italian", "indian", "thai", "american"]);
         });
+    }, []);
 
-        // Future:
-        // axios.get("/reviews/search", {
-        //     params: {
-        //         keyword,
-        //         verifiedOnly: filters.verifiedOnly,
-        //         minRating: filters.minRating,
-        //         cuisine: filters.cuisine,
-        //         priceLevel: filters.priceLevel,
-        //     },
-        // });
+    async function getUserLocation(): Promise<{ lat: number; lng: number }> {
+        if (navigator.geolocation) {
+            try {
+                const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
+                    navigator.geolocation.getCurrentPosition(resolve, reject, {
+                        enableHighAccuracy: true,
+                        timeout: 10000,
+                        maximumAge: 300000,
+                    });
+                });
+                return {
+                    lat: pos.coords.latitude,
+                    lng: pos.coords.longitude,
+                };
+            } catch (err) {
+                console.warn("Geolocation failed, falling back:", err);
+            }
+        }
+        return { lat: 1.3521, lng: 103.8198 };
+    }
+
+    async function handleSearch() {
+        setLoading(true);
+        try {
+            const { lat, lng } = await getUserLocation();
+            const params: SearchRequest = {
+                query: keyword,
+                lat,
+                lng,
+                radius: 5000,
+                cuisine: filters.cuisine || undefined,
+                price_level: filters.priceLevel || undefined,
+                min_score: filters.minRating,
+                verified_only: filters.verifiedOnly,
+                sort_by: "trust",
+                page: 1,
+                page_size: 20,
+            };
+            const res = await searchRestaurants(params);
+            setRestaurants(res.data.restaurants || []);
+        } catch (err) {
+            console.error("Search failed:", err);
+            alert("Search failed. Please try again.");
+        } finally {
+            setLoading(false);
+        }
     }
 
     return (
@@ -86,6 +117,7 @@ function Search() {
                 placeholder="Search reviews..."
                 value={keyword}
                 onChange={(e) => setKeyword(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                 style={{
 
                     width: "100%",
@@ -171,32 +203,154 @@ function Search() {
             <br />
             <br />
 
-            <button
-                onClick={handleSearch}
+            <div
+
                 style={{
+                    display: "grid",
 
-                    marginTop: "25px",
+                    gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
 
-                    padding: "14px 35px",
-
-                    fontSize: "17px",
-
-                    borderRadius: "12px",
-
-                    border: "none",
-
-                    background: "#E67E22",
-
-                    color: "white",
-
-                    fontWeight: 700,
-
-                    cursor: "pointer",
-
+                    gap: "24px"
                 }}
+
             >
-                Search
-            </button>
+
+                {restaurants.map((r) => (
+                    <div
+                        key={r.id}
+                        onClick={() => navigate(`/restaurant/${r.place_id || r.id}`)}
+                        style={{
+                            background: "white",
+
+                            borderRadius: "18px",
+
+                            overflow: "hidden",
+
+                            boxShadow: "0 6px 20px rgba(0,0,0,0.08)",
+
+                            cursor: "pointer",
+
+                        }}
+
+                    >
+                        <img
+                            src={r.photo_url || "/placeholder.png"}
+                            alt={r.name}
+                            style={{
+                                width: "100%",
+
+                                height: "180px",
+
+                                objectFit: "cover",
+
+                            }}
+                        />
+
+                        <div style={{ padding: "20px" }}>
+                            <div style={{
+
+                                display: "flex",
+
+                                justifyContent: "space-between",
+
+                                alignItems: "start",
+
+                            }}
+
+                            >
+
+                                <h3 style={{ margin: "0 0 8px 0", fontSize: "18px" }}>{r.name}</h3>
+
+                                {r.verified_review_count > 0 && (
+                                    <span style={{
+
+                                        background: "#e8f5e9",
+
+                                        color: "#2e7d32",
+
+                                        padding: "4px 10px",
+
+                                        borderRadius: "12px",
+
+                                        fontSize: "12px",
+
+                                        fontWeight: "bold",
+
+                                    }}>
+                                        ✓ Verified
+                                    </span>
+                                )}
+                            </div>
+
+                            <p style={{ color: "#777", fontSize: "14px", margin: "0 0 12px 0" }}>{r.address}</p>
+
+                            <div
+                                style={{
+
+                                    display: "flex",
+
+                                    gap: "15px",
+
+                                    fontSize: "14px",
+
+                                    color: "#555",
+                                }}
+
+                            >
+
+                                <span>⭐ {r.composite_score.toFixed(1)}</span>
+                                <span>🛡 {r.trust_weighted_score.toFixed(1)}</span>
+                                <span>📍 {r.distance.toFixed(1)}m</span>
+
+                            </div>
+
+                            <div style={{ marginTop: "12px", display: "flex", gap: "10px" }}>
+                                <span style={{
+
+                                    background: "#F0E8DE",
+
+                                    padding: "4px 10px",
+
+                                    borderRadius: "10px",
+
+                                    fontSize: "13px",
+
+                                }}>
+                                    {r.cuisine_type || "Unknown"}
+                                </span>
+                                <span style={{
+
+                                    background: "#FFF3E0",
+
+                                    padding: "4px 10px",
+
+                                    borderRadius: "10px",
+
+                                    fontSize: "13px",
+
+                                }}>
+                                    {"$".repeat(r.price_level || 1)}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            {!loading && restaurants.length === 0 && (
+                <div style={{
+
+                    textAlign: "center",
+
+                    padding: "60px",
+
+                    color: "#777",
+
+                }}>
+                    <h3>No restaurants found 🔍</h3>
+                    <p>Try adjusting your filters or search keywords.</p>
+                </div>
+            )}
         </div>
     );
 }

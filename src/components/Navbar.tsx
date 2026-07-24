@@ -12,24 +12,26 @@ export default function Navbar() {
 
     const navItems = [
         {
-            name:"Home",
-            path:"/"
+            name: "Home",
+            path: "/"
         },
         {
-            name:"Reviews",
-            path:"/reviews"
+            name: "Reviews",
+            path: "/reviews"
         },
         {
-            name:"Search",
-            path:"/search"
+            name: "Search",
+            path: "/search"
         },
         {
-            name:"Profile",
-            path:"/profile"
+            name: "Profile",
+            path: "/profile"
+        },
+        {
+            name: "Wishlist",
+            path: "/wishlist"
         }
     ];
-
-
 
     return (
 
@@ -37,24 +39,24 @@ export default function Navbar() {
 
             style={{
 
-                background:"#FFFFFF",
+                background: "#FFFFFF",
 
-                padding:"16px 40px",
+                padding: "16px 40px",
 
-                display:"flex",
+                display: "flex",
 
-                justifyContent:"space-between",
+                justifyContent: "space-between",
 
-                alignItems:"center",
+                alignItems: "center",
 
                 boxShadow:
-                "0 2px 10px rgba(0,0,0,0.06)",
+                    "0 2px 10px rgba(0,0,0,0.06)",
 
-                position:"sticky",
+                position: "sticky",
 
-                top:0,
+                top: 0,
 
-                zIndex:100,
+                zIndex: 100,
 
             }}
 
@@ -69,13 +71,13 @@ export default function Navbar() {
 
                 style={{
 
-                    textDecoration:"none",
+                    textDecoration: "none",
 
-                    fontSize:"24px",
+                    fontSize: "24px",
 
-                    fontWeight:800,
+                    fontWeight: 800,
 
-                    color:"#E67E22",
+                    color: "#E67E22",
 
                 }}
 
@@ -95,70 +97,70 @@ export default function Navbar() {
 
                 style={{
 
-                    display:"flex",
+                    display: "flex",
 
-                    gap:"10px",
+                    gap: "10px",
 
                 }}
 
             >
 
-            {
-                navItems.map((item)=>{
+                {
+                    navItems.map((item) => {
 
 
-                    const active =
-                        location.pathname === item.path;
+                        const active =
+                            location.pathname === item.path;
 
 
-                    return (
+                        return (
 
-                        <Link
+                            <Link
 
-                            key={item.path}
+                                key={item.path}
 
-                            to={item.path}
-
-
-                            style={{
-
-                                textDecoration:"none",
-
-                                padding:"10px 18px",
-
-                                borderRadius:"20px",
-
-                                color:
-                                    active
-                                    ?
-                                    "#FFFFFF"
-                                    :
-                                    "#2D3436",
+                                to={item.path}
 
 
-                                background:
-                                    active
-                                    ?
-                                    "#E67E22"
-                                    :
-                                    "transparent",
+                                style={{
+
+                                    textDecoration: "none",
+
+                                    padding: "10px 18px",
+
+                                    borderRadius: "20px",
+
+                                    color:
+                                        active
+                                            ?
+                                            "#FFFFFF"
+                                            :
+                                            "#2D3436",
 
 
-                                fontWeight:600,
+                                    background:
+                                        active
+                                            ?
+                                            "#E67E22"
+                                            :
+                                            "transparent",
 
 
-                            }}
+                                    fontWeight: 600,
 
-                        >
 
-                            {item.name}
+                                }}
 
-                        </Link>
+                            >
 
-                    );
+                                {item.name}
 
-                })
-            }
+                            </Link>
+
+                        );
+
+                    })
+                }
 
             </div>
 
@@ -170,61 +172,61 @@ export default function Navbar() {
 
             <div>
 
-            {
-                user ?
+                {
+                    user ?
 
-                <button
+                        <button
 
-                    onClick={logout}
+                            onClick={logout}
 
-                    style={{
+                            style={{
 
-                        border:"none",
+                                border: "none",
 
-                        background:"#FFF0E5",
+                                background: "#FFF0E5",
 
-                        color:"#E67E22",
+                                color: "#E67E22",
 
-                        padding:"10px 16px",
+                                padding: "10px 16px",
 
-                        borderRadius:"20px",
+                                borderRadius: "20px",
 
-                        cursor:"pointer",
+                                cursor: "pointer",
 
-                        fontWeight:600,
+                                fontWeight: 600,
 
-                    }}
+                            }}
 
-                >
+                        >
 
-                    Logout
+                            Logout
 
-                </button>
+                        </button>
 
 
-                :
+                        :
 
-                <Link
+                        <Link
 
-                    to="/login"
+                            to="/login"
 
-                    style={{
+                            style={{
 
-                        textDecoration:"none",
+                                textDecoration: "none",
 
-                        color:"#E67E22",
+                                color: "#E67E22",
 
-                        fontWeight:600,
+                                fontWeight: 600,
 
-                    }}
+                            }}
 
-                >
+                        >
 
-                    Login
+                            Login
 
-                </Link>
+                        </Link>
 
-            }
+                }
 
             </div>
 

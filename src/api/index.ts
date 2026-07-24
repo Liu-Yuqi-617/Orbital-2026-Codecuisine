@@ -109,4 +109,19 @@ export const gpsCheckin = (data: GPSCheckinRequest) => {
   return api.post<Verification>('/verifications/gps', data);
 };
 
+// POST /api/wishlist
+export const addToWishlist = (restaurantId: string, notes?: string, tags?: string[]) => {
+  return api.post('/wishlist', { restaurant_id: restaurantId, notes, tags });
+};
+
+// GET /api/wishlist
+export const getWishlist = () => {
+  return api.get('/wishlist');
+};
+
+// POST /api/wishlist/:restaurant_id (remove)
+export const removeFromWishlist = (restaurantId: string) => {
+  return api.post(`/wishlist/${restaurantId}`);
+};
+
 export default api;
