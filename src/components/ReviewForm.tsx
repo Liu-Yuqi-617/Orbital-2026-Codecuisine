@@ -173,7 +173,11 @@ export default function ReviewForm({
     fontFamily:
       "Inter, Segoe UI, Arial, sans-serif",
 
-    color: "#2D3436",
+
+
+    color: "#FFFFFF",
+    
+    caretColor: "#FFFFFF",
 
     outline: "none",
 

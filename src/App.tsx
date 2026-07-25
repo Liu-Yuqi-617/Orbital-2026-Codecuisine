@@ -6,6 +6,8 @@ import Reviews from "./pages/Reviews"
 import Search from "./pages/Search"
 import { AuthProvider } from "./context/AuthContext"
 import ProtectedRoute from "./components/ProtectedRoute"
+import Wishlist from "./pages/Wishlist"
+
 
 function App() {
 
@@ -55,6 +57,15 @@ function App() {
                         element={
                             <ProtectedRoute>
                                 <Search />
+                            </ProtectedRoute>
+                        }
+                    />
+
+                    <Route
+                        path="/wishlist"
+                        element={
+                            <ProtectedRoute>
+                                <Wishlist />
                             </ProtectedRoute>
                         }
                     />

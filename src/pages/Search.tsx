@@ -106,6 +106,10 @@ function Search() {
 
                     boxSizing: "border-box",
 
+                    color: "#0e0d0d",
+                    
+                    caretColor: "#0e0d0d",
+
                 }}
             />
 
