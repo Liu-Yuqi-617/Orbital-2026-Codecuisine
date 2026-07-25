@@ -8,8 +8,6 @@ export default function Navbar() {
 
     const { user, logout } = useAuth();
 
-
-
     const navItems = [
         {
             name: "Home",
