@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import FilterPanel from "../components/FilterPanel";
-import { searchRestaurants, getCuisineTypes } from "../api";
+import { searchRestaurants } from "../api";
 import type { SimpleRestaurant, SearchRequest } from "../types";
 import { useNavigate } from "react-router-dom";
 
@@ -19,12 +19,16 @@ function Search() {
     });
 
     useEffect(() => {
-        getCuisineTypes().then(res => {
-            setCuisines(res.data.cuisines || []);
-        }).catch(() => {
-            setCuisines(["chinese", "japanese", "korean", "italian", "indian", "thai", "american"]);
-        });
-    }, []);
+        fetch("/api/search/cuisines")
+            .then((res) => res.json())
+            .then((data) => {
+                setCuisines(data);
+            })
+            .catch((err) => {
+                console.error("Failed to load cuisines:", err);
+                setCuisines([]);
+            });
+    }, [])
 
     async function getUserLocation(): Promise<{ lat: number; lng: number }> {
         if (navigator.geolocation) {
@@ -134,6 +138,10 @@ function Search() {
 
                     background: "white",
 
+                    color: "#333333",
+
+                    caretColor: "#333333",
+
                     outline: "none",
 
                     boxSizing: "border-box",
@@ -188,6 +196,8 @@ function Search() {
                         }))
                     }
 
+                    cuisines={cuisines}
+
                     priceLevel={filters.priceLevel}
                     setPriceLevel={(value) =>
                         setFilters((prev) => ({
@@ -196,7 +206,6 @@ function Search() {
                         }))
                     }
 
-                    cuisines={cuisines}
                 />
             </div>
 

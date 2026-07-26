@@ -5,6 +5,7 @@ import (
 
 	"codecuisine-backend/internal/dto"
 	"codecuisine-backend/internal/service"
+	"codecuisine-backend/pkg/utils"
 
 	"github.com/gin-gonic/gin"
 )
@@ -45,6 +46,6 @@ func (h *SearchHandler) SearchRestaurants(c *gin.Context) {
 
 // GetCuisineTypes retrieves distinct cuisine types from the database
 func (h *SearchHandler) GetCuisineTypes(c *gin.Context) {
-	var cuisines []string
-	c.JSON(http.StatusOK, gin.H{"cuisines": cuisines})
+	cuisines := utils.GetAllCuisineTypes()
+	c.JSON(http.StatusOK, cuisines)
 }

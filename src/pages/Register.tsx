@@ -3,29 +3,29 @@ import { useNavigate } from "react-router-dom";
 import { register as register_api } from "../api";
 
 
-function Register(){
+function Register() {
 
 
-    const [username,setUsername]=useState("");
+    const [username, setUsername] = useState("");
 
-    const [email,setEmail]=useState("");
+    const [email, setEmail] = useState("");
 
-    const [password,setPassword]=useState("");
+    const [password, setPassword] = useState("");
 
-    const [confirm,setConfirm]=useState("");
+    const [confirm, setConfirm] = useState("");
 
-    const [error,setError]=useState("");
+    const [error, setError] = useState("");
 
 
 
-    const navigate=useNavigate();
+    const navigate = useNavigate();
 
 
 
 
     async function handleSubmit(
-        e:React.FormEvent
-    ){
+        e: React.FormEvent
+    ) {
 
         e.preventDefault();
 
@@ -33,12 +33,12 @@ function Register(){
 
 
 
-        if(
+        if (
             !username ||
             !email ||
             !password ||
             !confirm
-        ){
+        ) {
 
             setError(
                 "Please fill in all fields"
@@ -50,7 +50,7 @@ function Register(){
 
 
 
-        if(password!==confirm){
+        if (password !== confirm) {
 
             setError(
                 "Passwords do not match"
@@ -62,7 +62,7 @@ function Register(){
 
 
 
-        if(password.length<6){
+        if (password.length < 6) {
 
             setError(
                 "Password should be at least 6 characters"
@@ -75,10 +75,10 @@ function Register(){
 
 
 
-        if(
-            username.length<3 ||
-            username.length>20
-        ){
+        if (
+            username.length < 3 ||
+            username.length > 20
+        ) {
 
             setError(
                 "Username should be between 3 and 20 characters"
@@ -91,29 +91,29 @@ function Register(){
 
 
 
-        try{
+        try {
 
 
             const res =
-            await register_api({
+                await register_api({
 
-                username,
+                    username,
 
-                email,
+                    email,
 
-                password,
+                    password,
 
-                confirm_password:confirm,
+                    confirm_password: confirm,
 
-            });
+                });
 
 
 
-            if(res.data.code===200){
+            if (res.data.code === 200) {
 
                 navigate("/login");
 
-            }else{
+            } else {
 
                 setError(
                     res.data.message
@@ -122,7 +122,7 @@ function Register(){
             }
 
 
-        }catch(err:any){
+        } catch (err: any) {
 
             setError(
                 err.response?.data?.message ||
@@ -139,25 +139,25 @@ function Register(){
 
 
 
-    const inputStyle={
+    const inputStyle = {
 
-        width:"100%",
+        width: "100%",
 
-        padding:"13px",
+        padding: "13px",
 
-        marginTop:"8px",
+        marginTop: "8px",
 
-        marginBottom:"18px",
+        marginBottom: "18px",
 
-        borderRadius:"12px",
+        borderRadius: "12px",
 
         border:
-        "1px solid #E8E1D9",
+            "1px solid #E8E1D9",
 
-        fontSize:"15px",
+        fontSize: "15px",
 
         boxSizing:
-        "border-box" as const,
+            "border-box" as const,
 
     };
 
@@ -169,278 +169,282 @@ function Register(){
 
         <div
 
-        style={{
+            style={{
 
-            minHeight:"100vh",
+                minHeight: "100vh",
 
-            background:"#F7F8FA",
+                background: "#F7F8FA",
 
-            display:"flex",
+                display: "flex",
 
-            justifyContent:"center",
+                justifyContent: "center",
 
-            alignItems:"center",
+                alignItems: "center",
 
-            padding:"40px 20px",
+                padding: "40px 20px",
 
-        }}
+            }}
 
         >
 
 
 
-        <form
+            <form
 
-        onSubmit={handleSubmit}
-
-
-        style={{
-
-            width:"100%",
-
-            maxWidth:"420px",
-
-            background:"#FFFFFF",
-
-            padding:"40px",
-
-            borderRadius:"22px",
-
-            boxShadow:
-            "0 10px 30px rgba(0,0,0,0.08)",
-
-        }}
-
-        >
+                onSubmit={handleSubmit}
 
 
+                style={{
 
-            <h1
+                    width: "100%",
 
-            style={{
+                    maxWidth: "420px",
 
-                textAlign:"center",
+                    background: "#FFFFFF",
 
-                color:"#E67E22",
+                    padding: "40px",
 
-                fontWeight:800,
+                    borderRadius: "22px",
 
-            }}
+                    boxShadow:
+                        "0 10px 30px rgba(0,0,0,0.08)",
+
+                }}
 
             >
 
-                🍽 FoodTrust
-
-            </h1>
 
 
+                <h1
 
-            <h2
+                    style={{
 
-            style={{
+                        textAlign: "center",
 
-                textAlign:"center",
+                        color: "#E67E22",
 
-                color:"#2D3436",
+                        fontWeight: 800,
 
-            }}
+                    }}
 
-            >
+                >
 
-                Create Account
+                    🍽 FoodTrust
 
-            </h2>
+                </h1>
 
 
 
+                <h2
 
-            {
-                error &&
+                    style={{
+
+                        textAlign: "center",
+
+                        color: "#2D3436",
+
+                    }}
+
+                >
+
+                    Create Account
+
+                </h2>
+
+
+
+
+                {
+                    error &&
+
+                    <p
+
+                        style={{
+
+                            background: "#FDECEC",
+
+                            color: "#C0392B",
+
+                            padding: "12px",
+
+                            borderRadius: "10px",
+
+                        }}
+
+                    >
+
+                        {error}
+
+                    </p>
+
+                }
+
+
+
+                <input
+
+                    placeholder="Username"
+
+                    value={username}
+
+                    onChange={
+                        e => setUsername(
+                            e.target.value
+                        )
+                    }
+
+                    style={inputStyle}
+
+                />
+
+
+
+                <input
+
+                    type="email"
+
+                    placeholder="Email"
+
+                    value={email}
+
+                    onChange={
+                        e => setEmail(
+                            e.target.value
+                        )
+                    }
+
+                    style={inputStyle}
+
+                />
+
+
+
+                <input
+
+                    type="password"
+
+                    placeholder="Password"
+
+                    value={password}
+
+                    onChange={
+                        e => setPassword(
+                            e.target.value
+                        )
+                    }
+
+                    style={inputStyle}
+
+                />
+
+
+
+                <input
+
+                    type="password"
+
+                    placeholder="Confirm Password"
+
+                    value={confirm}
+
+                    onChange={
+                        e => setConfirm(
+                            e.target.value
+                        )
+                    }
+
+                    style={inputStyle}
+
+                />
+
+
+
+
+                <button
+
+                    type="submit"
+
+                    onClick={
+                        () => navigate("/login")
+                    }
+
+                    style={{
+
+                        width: "100%",
+
+                        padding: "14px",
+
+                        borderRadius: "12px",
+
+                        border: "none",
+
+                        background: "#E67E22",
+
+                        color: "white",
+
+                        fontSize: "17px",
+
+                        fontWeight: 700,
+
+                        cursor: "pointer",
+
+                    }}
+
+                >
+
+                    Register
+
+                </button>
+
+
 
                 <p
 
-                style={{
+                    style={{
 
-                    background:"#FDECEC",
+                        textAlign: "center",
 
-                    color:"#C0392B",
+                        marginTop: "20px",
 
-                    padding:"12px",
+                        color: "#636E72",
 
-                    borderRadius:"10px",
-
-                }}
+                    }}
 
                 >
 
-                    {error}
+                    Already have an account?
+
+
+                    <span
+
+                        onClick={
+                            () => navigate("/login")
+                        }
+
+                        style={{
+
+                            color: "#E67E22",
+
+                            fontWeight: 700,
+
+                            cursor: "pointer",
+
+                            marginLeft: "5px",
+
+                        }}
+
+                    >
+
+                        Login
+
+                    </span>
+
 
                 </p>
 
-            }
 
 
-
-            <input
-
-            placeholder="Username"
-
-            value={username}
-
-            onChange={
-                e=>setUsername(
-                    e.target.value
-                )
-            }
-
-            style={inputStyle}
-
-            />
-
-
-
-            <input
-
-            type="email"
-
-            placeholder="Email"
-
-            value={email}
-
-            onChange={
-                e=>setEmail(
-                    e.target.value
-                )
-            }
-
-            style={inputStyle}
-
-            />
-
-
-
-            <input
-
-            type="password"
-
-            placeholder="Password"
-
-            value={password}
-
-            onChange={
-                e=>setPassword(
-                    e.target.value
-                )
-            }
-
-            style={inputStyle}
-
-            />
-
-
-
-            <input
-
-            type="password"
-
-            placeholder="Confirm Password"
-
-            value={confirm}
-
-            onChange={
-                e=>setConfirm(
-                    e.target.value
-                )
-            }
-
-            style={inputStyle}
-
-            />
-
-
-
-
-            <button
-
-            type="submit"
-
-            style={{
-
-                width:"100%",
-
-                padding:"14px",
-
-                borderRadius:"12px",
-
-                border:"none",
-
-                background:"#E67E22",
-
-                color:"white",
-
-                fontSize:"17px",
-
-                fontWeight:700,
-
-                cursor:"pointer",
-
-            }}
-
-            >
-
-                Register
-
-            </button>
-
-
-
-            <p
-
-            style={{
-
-                textAlign:"center",
-
-                marginTop:"20px",
-
-                color:"#636E72",
-
-            }}
-
-            >
-
-                Already have an account?
-
-
-                <span
-
-                onClick={
-                    ()=>navigate("/login")
-                }
-
-                style={{
-
-                    color:"#E67E22",
-
-                    fontWeight:700,
-
-                    cursor:"pointer",
-
-                    marginLeft:"5px",
-
-                }}
-
-                >
-
-                    Login
-
-                </span>
-
-
-            </p>
-
-
-
-        </form>
+            </form>
 
 
         </div>

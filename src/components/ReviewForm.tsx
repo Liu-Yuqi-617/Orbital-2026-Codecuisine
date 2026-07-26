@@ -367,6 +367,10 @@ export default function ReviewForm({
 
           marginBottom: "20px",
 
+          color: "#ffffff",
+
+          caretColor: "#ffffff",
+
         }}
 
       />
@@ -408,6 +412,10 @@ export default function ReviewForm({
           marginTop: "8px",
 
           marginBottom: "20px",
+
+          color: "#ffffff",
+
+          caretColor: "#ffffff",
 
         }}
 
@@ -452,7 +460,9 @@ export default function ReviewForm({
 
           marginBottom: "25px",
 
-          //resize:"vertical",
+          color: "#ffffff",
+
+          caretColor: "#ffffff",
 
         }}
 

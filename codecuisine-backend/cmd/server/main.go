@@ -80,6 +80,7 @@ func main() {
 		// public read routes
 		api.GET("/restaurants/:id/reviews", reviewHandler.GetByRestaurant)
 		api.GET("/reviews/:reviewId/verification", verificationHandler.GetByReview)
+		api.GET("/search/cuisines", searchHandler.GetCuisineTypes)
 
 		// protected routes - need jwt token
 		protected := api.Group("")
@@ -92,7 +93,6 @@ func main() {
 			protected.DELETE("/reviews/:id", reviewHandler.Delete)
 			protected.POST("/verifications/upload", verificationHandler.UploadReceipt)
 			protected.GET("/search/restaurants", searchHandler.SearchRestaurants)
-			protected.GET("/search/cuisines", searchHandler.GetCuisineTypes)
 			protected.POST("/verifications/gps", verificationHandler.GPSCheckin)
 			protected.POST("/wishlist", wishlistHandler.AddToWishlist)
 			protected.GET("/wishlist", wishlistHandler.GetWishlist)
