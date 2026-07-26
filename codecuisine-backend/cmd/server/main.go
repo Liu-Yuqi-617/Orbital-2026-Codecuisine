@@ -44,6 +44,8 @@ func main() {
 	}
 
 	searchService := service.NewSearchService(db, apiKey)
+	syncService := service.NewRestaurantSyncService(db, apiKey)
+	syncService.StartBackgroundSync()
 
 	// start cache cleanup (once an hour automatically)
 	go service.StartCacheCleanup(searchService)
@@ -69,6 +71,7 @@ func main() {
 		verificationHandler := handlers.NewVerificationHandler(db, searchService, imageService)
 		searchHandler := handlers.NewSearchHandler(searchService)
 		wishlistHandler := handlers.NewWishlistHandler(db)
+		searchLocalHandler := handlers.NewSearchLocalHandler(syncService)
 
 		// public routes - no login needed
 		auth := api.Group("/auth")
@@ -81,6 +84,8 @@ func main() {
 		api.GET("/restaurants/:id/reviews", reviewHandler.GetByRestaurant)
 		api.GET("/reviews/:reviewId/verification", verificationHandler.GetByReview)
 		api.GET("/search/cuisines", searchHandler.GetCuisineTypes)
+		api.GET("/search/local", searchLocalHandler.SearchLocal)
+		api.GET("/search/restaurants", searchHandler.SearchRestaurants)
 
 		// protected routes - need jwt token
 		protected := api.Group("")
@@ -92,11 +97,12 @@ func main() {
 			protected.PUT("/reviews/:id", reviewHandler.Update)
 			protected.DELETE("/reviews/:id", reviewHandler.Delete)
 			protected.POST("/verifications/upload", verificationHandler.UploadReceipt)
-			protected.GET("/search/restaurants", searchHandler.SearchRestaurants)
 			protected.POST("/verifications/gps", verificationHandler.GPSCheckin)
 			protected.POST("/wishlist", wishlistHandler.AddToWishlist)
 			protected.GET("/wishlist", wishlistHandler.GetWishlist)
 			protected.POST("/wishlist/:restaurant_id", wishlistHandler.RemoveFromWishlist)
+			protected.GET("/restaurants/place/:placeId", searchHandler.GetRestaurantByPlaceID)
+			protected.GET("/restaurants/:id", searchHandler.GetRestaurantByID)
 		}
 	}
 

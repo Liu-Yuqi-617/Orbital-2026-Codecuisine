@@ -19,6 +19,7 @@ function FilterPanel({
     setPriceLevel: (value: number) => void;
     cuisines: string[];
 }) {
+
     return (
         <div style={{ display: "flex", gap: "20px", alignItems: "center" }}>
 

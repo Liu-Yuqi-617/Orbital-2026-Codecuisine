@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import FilterPanel from "../components/FilterPanel";
-import { searchRestaurants } from "../api";
+import { searchRestaurants, getCuisineTypes } from "../api";
 import type { SimpleRestaurant, SearchRequest } from "../types";
 import { useNavigate } from "react-router-dom";
 
@@ -13,56 +13,73 @@ function Search() {
     const [cuisines, setCuisines] = useState<string[]>([]);
     const [filters, setFilters] = useState({
         verifiedOnly: false,
-        minRating: 1,
+        minRating: 0,
         cuisine: "",
         priceLevel: 0,
     });
 
     useEffect(() => {
-        fetch("/api/search/cuisines")
-            .then((res) => res.json())
-            .then((data) => {
-                setCuisines(data);
-            })
-            .catch((err) => {
+        async function loadCuisines() {
+            try {
+                const res = await getCuisineTypes();
+                setCuisines(res.data || []);
+            } catch (err) {
                 console.error("Failed to load cuisines:", err);
                 setCuisines([]);
-            });
-    }, [])
-
-    async function getUserLocation(): Promise<{ lat: number; lng: number }> {
-        if (navigator.geolocation) {
-            try {
-                const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
-                    navigator.geolocation.getCurrentPosition(resolve, reject, {
-                        enableHighAccuracy: true,
-                        timeout: 10000,
-                        maximumAge: 300000,
-                    });
-                });
-                return {
-                    lat: pos.coords.latitude,
-                    lng: pos.coords.longitude,
-                };
-            } catch (err) {
-                console.warn("Geolocation failed, falling back:", err);
             }
         }
-        return { lat: 1.3521, lng: 103.8198 };
+        loadCuisines();
+    }, []);
+
+    async function getUserLocation(): Promise<{ lat: number; lng: number }> {
+        const fallback = { lat: 1.3521, lng: 103.8198 };
+
+        if (!navigator.geolocation) {
+            console.warn("Cannot get your location.");
+            return fallback;
+        }
+
+        try {
+            const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
+                navigator.geolocation.getCurrentPosition(resolve, reject, {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 300000,
+                });
+            });
+            return {
+                lat: pos.coords.latitude,
+                lng: pos.coords.longitude,
+            };
+        } catch (err) {
+            console.warn("Geolocation failed, falling back to Singapore:", err);
+            return fallback;
+        }
     }
+
+    useEffect(() => {
+        handleSearch();
+    }, []);
 
     async function handleSearch() {
         setLoading(true);
         try {
-            const { lat, lng } = await getUserLocation();
+            let { lat, lng } = await getUserLocation();
+
+            if (lat == null || lng == null || isNaN(lat) || isNaN(lng)) {
+                console.warn("Invalid coordinates");
+                lat = 1.3521;
+                lng = 103.8198;
+            }
+
             const params: SearchRequest = {
-                query: keyword,
+                query: keyword || undefined,
                 lat,
                 lng,
-                radius: 5000,
+                radius: 50000,
                 cuisine: filters.cuisine || undefined,
                 price_level: filters.priceLevel || undefined,
-                min_score: filters.minRating,
+                min_score: filters.minRating || undefined,
                 verified_only: filters.verifiedOnly,
                 sort_by: "trust",
                 page: 1,
@@ -106,7 +123,9 @@ function Search() {
 
                     color: "#636E72",
 
-                    fontSize: "18px"
+                    fontSize: "18px",
+
+                    marginBottom: "5px"
 
                 }}
 
@@ -118,7 +137,7 @@ function Search() {
 
             <input
                 type="text"
-                placeholder="Search reviews..."
+                placeholder="Search by restaurant name or cuisine..."
                 value={keyword}
                 onChange={(e) => setKeyword(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSearch()}
@@ -148,6 +167,36 @@ function Search() {
 
                 }}
             />
+
+            <button
+                onClick={handleSearch}
+                disabled={loading}
+                style={{
+
+                    marginTop: "10px",
+
+                    padding: "10px 30px",
+
+                    borderRadius: "12px",
+
+                    border: "none",
+
+                    background: "#E67E22",
+
+                    color: "white",
+
+                    fontSize: "16px",
+
+                    fontWeight: 700,
+
+                    cursor: loading ? "not-allowed" : "pointer",
+
+                    opacity: loading ? 0.6 : 1,
+
+                }}
+            >
+                {loading ? "Searching..." : "Search"}
+            </button>
 
             <br />
             <br />
@@ -207,6 +256,29 @@ function Search() {
                     }
 
                 />
+
+                <button
+                    onClick={handleSearch}
+                    style={{
+
+                        marginTop: "20px",
+
+                        padding: "8px 20px",
+
+                        borderRadius: "10px",
+
+                        border: "1px solid #E8E1D9",
+
+                        background: "#E67E22",
+
+                        cursor: "pointer",
+
+                        fontSize: "14px",
+
+                    }}
+                >
+                    Apply Filters
+                </button>
             </div>
 
             <br />

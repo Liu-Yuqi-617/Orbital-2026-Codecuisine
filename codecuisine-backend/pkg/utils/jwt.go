@@ -8,7 +8,7 @@ import (
 
 // Claims is the data stored inside jwt token
 type Claims struct {
-	UserID   uint   `json:"userId"`   // user's id
+	UserID   uint   `json:"userID"`   // user's id
 	Username string `json:"username"` // user's name
 	Email    string `json:"email"`    // user's email
 	jwt.RegisteredClaims

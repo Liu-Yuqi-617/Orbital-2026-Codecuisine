@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import ReviewForm from "../components/ReviewForm";
 import ReviewList from "../components/ReviewList";
 import Navbar from "../components/Navbar";
@@ -7,10 +8,10 @@ import type { Review, CreateReviewRequest } from "../types";
 
 
 export default function Reviews() {
+  const navigate = useNavigate();
 
   const [reviews, setReviews] =
     useState<Review[]>([]);
-
 
   const [isLoading, setIsLoading] =
     useState(false);
@@ -64,6 +65,8 @@ export default function Reviews() {
 
       await loadMyReviews();
       alert("Review submitted successfully!");
+
+      navigate(`/restaurant/${reviewData.restaurantId}`);
 
     } catch (err: any) {
       console.error("Failed to submit review:", err);

@@ -124,4 +124,8 @@ export const removeFromWishlist = (restaurantId: string) => {
   return api.post(`/wishlist/${restaurantId}`);
 };
 
+export const getRestaurantByPlaceId = (placeId: string) => {
+  return api.get(`/restaurants/place/${placeId}`);
+};
+
 export default api;

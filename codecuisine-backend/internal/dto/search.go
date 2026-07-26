@@ -1,5 +1,9 @@
 package dto
 
+import (
+	"time"
+)
+
 // search request
 type SearchRequest struct {
 	Query        string  `form:"query" binding:"omitempty,max=100"`
@@ -41,4 +45,40 @@ type SimpleRestaurant struct {
 	TrustWeightedScore  float64 `json:"trust_weighted_score"`
 	VerifiedReviewCount int     `json:"verified_review_count"`
 	TotalReviewCount    int     `json:"total_review_count"`
+}
+
+// RestaurantDetailResponse represents detailed restaurant information
+type RestaurantDetailResponse struct {
+	ID                  uint             `json:"id"`
+	PlaceID             string           `json:"place_id"`
+	Name                string           `json:"name"`
+	Address             string           `json:"address"`
+	Lat                 float64          `json:"lat"`
+	Lng                 float64          `json:"lng"`
+	CuisineType         string           `json:"cuisine_type"`
+	PriceLevel          int              `json:"price_level"`
+	Phone               string           `json:"phone"`
+	PhotoURL            string           `json:"photo_url"`
+	AvgTaste            float64          `json:"avg_taste"`
+	AvgValue            float64          `json:"avg_value"`
+	AvgAmbiance         float64          `json:"avg_ambiance"`
+	CompositeScore      float64          `json:"composite_score"`
+	TrustWeightedScore  float64          `json:"trust_weighted_score"`
+	TotalReviewCount    int64            `json:"total_review_count"`
+	VerifiedReviewCount int64            `json:"verified_review_count"`
+	Reviews             []ReviewResponse `json:"reviews"`
+}
+
+// ReviewResponse represents a review in the restaurant detail response
+type ReviewResponse struct {
+	ID             uint      `json:"id"`
+	UserID         uint      `json:"user_id"`
+	Username       string    `json:"username"`
+	TasteRating    int       `json:"taste_rating"`
+	ValueRating    int       `json:"value_rating"`
+	AmbianceRating int       `json:"ambiance_rating"`
+	Title          string    `json:"title"`
+	Body           string    `json:"body"`
+	IsVerified     bool      `json:"is_verified"`
+	CreatedAt      time.Time `json:"created_at"`
 }

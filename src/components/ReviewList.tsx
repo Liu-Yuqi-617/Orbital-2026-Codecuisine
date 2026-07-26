@@ -1,5 +1,5 @@
 import type { Review } from "../types";
-
+import { useNavigate } from "react-router-dom";
 
 function calculateTrustScore(review: Review): number {
     let score = 0;
@@ -79,19 +79,19 @@ function getTrustInfo(score: number) {
 function Stars({
     rating,
 }: {
-    rating:number;
+    rating: number;
 }) {
 
     return (
         <span>
             {
-                [1,2,3,4,5].map(
-                    (star)=>(
+                [1, 2, 3, 4, 5].map(
+                    (star) => (
                         <span key={star}>
                             {
                                 star <= rating
-                                ? "⭐"
-                                : "☆"
+                                    ? "⭐"
+                                    : "☆"
                             }
                         </span>
                     )
@@ -106,23 +106,32 @@ function Stars({
 
 
 export default function ReviewList({
+
     reviews,
-}:{
-    reviews:Review[];
+
+    showRestaurantLink = false,
+
+}: {
+
+    reviews: Review[];
+
+    showRestaurantLink?: boolean;
+
 }) {
 
+    const navigate = useNavigate();
 
-    if(reviews.length===0){
+    if (reviews.length === 0) {
 
         return (
 
             <div
                 style={{
-                    textAlign:"center",
-                    padding:"50px",
-                    background:"white",
-                    borderRadius:"16px",
-                    color:"#777",
+                    textAlign: "center",
+                    padding: "50px",
+                    background: "white",
+                    borderRadius: "16px",
+                    color: "#777",
                 }}
             >
 
@@ -146,466 +155,553 @@ export default function ReviewList({
 
         <div
             style={{
-                display:"flex",
-                flexDirection:"column",
-                gap:"24px",
+
+                display: "flex",
+
+                flexDirection: "column",
+
+                gap: "24px",
+
             }}
         >
 
 
-        {
-            reviews.map((review)=>{
+            {
+                reviews.map((review) => {
 
 
-                const trustScore =
-                    calculateTrustScore(review);
+                    const trustScore =
+                        calculateTrustScore(review);
 
 
-                const trust =
-                    getTrustInfo(trustScore);
-
-
-
-                const overall =
-                    (
-                        review.tasteRating +
-                        review.valueRating +
-                        review.ambianceRating
-                    ) / 3;
+                    const trust =
+                        getTrustInfo(trustScore);
 
 
 
-                return (
-
-                <div
-                    key={review.id}
-
-                    style={{
-
-                        background:"#ffffff",
-
-                        borderRadius:"18px",
-
-                        padding:"24px",
-
-                        boxShadow:
-                            "0 6px 20px rgba(0,0,0,0.08)",
-
-                        transition:
-                            "transform 0.2s",
-
-                    }}
-
-                    onMouseEnter={
-                        (e)=>
-                            e.currentTarget.style.transform
-                            ="translateY(-4px)"
-                    }
-
-                    onMouseLeave={
-                        (e)=>
-                            e.currentTarget.style.transform
-                            ="translateY(0)"
-                    }
-
-                >
+                    const overall =
+                        (
+                            review.tasteRating +
+                            review.valueRating +
+                            review.ambianceRating
+                        ) / 3;
 
 
 
-                    {/* Header */}
+                    return (
 
-                    <div
-                        style={{
-                            display:"flex",
-                            justifyContent:"space-between",
-                            alignItems:"center",
-                        }}
-                    >
+                        <div
+                            key={review.id}
 
-                        <div>
+                            style={{
 
-                            <h2
-                                style={{
-                                    margin:"0",
-                                    fontSize:"22px",
-                                }}
-                            >
+                                background: "#ffffff",
 
-                            {
-                                review.restaurant?.name
-                                ||
-                                `Restaurant #${review.restaurantId}`
+                                borderRadius: "18px",
+
+                                padding: "24px",
+
+                                boxShadow:
+                                    "0 6px 20px rgba(0,0,0,0.08)",
+
+                                transition:
+                                    "transform 0.2s",
+
+                            }}
+
+                            onMouseEnter={
+                                (e) =>
+                                    e.currentTarget.style.transform
+                                    = "translateY(-4px)"
                             }
 
-                            </h2>
+                            onMouseLeave={
+                                (e) =>
+                                    e.currentTarget.style.transform
+                                    = "translateY(0)"
+                            }
 
+                        >
+
+
+
+                            {/* Header */}
 
                             <div
                                 style={{
-                                    marginTop:"8px",
-                                    color:"#777",
+
+                                    display: "flex",
+
+                                    justifyContent: "space-between",
+
+                                    alignItems: "center",
+
+                                    flexWrap: "wrap",
+
+                                    gap: "10px",
+
                                 }}
                             >
 
+                                <div>
+
+                                    <h2
+                                        style={{
+
+                                            margin: "0",
+
+                                            fontSize: "22px",
+
+                                        }}
+                                    >
+
+                                        {
+                                            review.restaurant?.name
+                                            ||
+                                            `Restaurant #${review.restaurantId}`
+                                        }
+
+                                    </h2>
+
+                                    {showRestaurantLink && review.restaurantId && (
+                                        <button
+                                            onClick={() => navigate(`/restaurant/${review.restaurantId}`)}
+                                            style={{
+
+                                                background: "transparent",
+
+                                                border: "none",
+
+                                                color: "#E67E22",
+
+                                                fontSize: "14px",
+
+                                                fontWeight: 600,
+
+                                                cursor: "pointer",
+
+                                                padding: "4px 0",
+
+                                                textDecoration: "underline",
+
+                                            }}
+                                        >
+                                            View Restaurant →
+                                        </button>
+                                    )}
+
+                                    <div
+                                        style={{
+
+                                            marginTop: "8px",
+
+                                            color: "#777",
+
+                                            fontSize: "14px",
+
+                                        }}
+                                    >
+
+                                        {
+                                            review.user?.username
+                                            ||
+                                            "Anonymous"
+                                        }
+
+                                    </div>
+
+                                </div>
+
+
+
                                 {
-                                    review.user?.username
-                                    ||
-                                    "Anonymous"
+                                    review.isVerified
+
+                                        ?
+
+                                        <span
+                                            style={{
+
+                                                background: "#e8f5e9",
+
+                                                color: "#2e7d32",
+
+                                                padding: "8px 14px",
+
+                                                borderRadius: "20px",
+
+                                                fontWeight: "bold",
+
+                                                fontSize: "14px",
+
+                                            }}
+                                        >
+
+                                            ✓ Verified
+
+                                        </span>
+
+                                        :
+
+                                        <span
+                                            style={{
+
+                                                background: "#fff3e0",
+
+                                                color: "#ef6c00",
+
+                                                padding: "8px 14px",
+
+                                                borderRadius: "20px",
+
+                                                fontWeight: "bold",
+
+                                            }}
+                                        >
+
+                                            Unverified
+
+                                        </span>
+
                                 }
+
 
                             </div>
 
 
-                        </div>
 
 
+                            {/* Title */}
 
-                        {
-                            review.isVerified
-
-                            ?
-
-                            <span
+                            <h3
                                 style={{
-                                    background:"#e8f5e9",
-                                    color:"#2e7d32",
-                                    padding:"8px 14px",
-                                    borderRadius:"20px",
-                                    fontWeight:"bold",
-                                    fontSize:"14px",
+                                    marginTop: "20px",
                                 }}
                             >
 
-                            ✓ Verified
+                                {review.title}
 
-                            </span>
+                            </h3>
 
-                            :
-
-                            <span
-                                style={{
-                                    background:"#fff3e0",
-                                    color:"#ef6c00",
-                                    padding:"8px 14px",
-                                    borderRadius:"20px",
-                                    fontWeight:"bold",
-                                }}
-                            >
-
-                            Unverified
-
-                            </span>
-
-                        }
-
-
-                    </div>
-
-
-
-
-                    {/* Title */}
-
-                    <h3
-                        style={{
-                            marginTop:"20px",
-                        }}
-                    >
-
-                        {review.title}
-
-                    </h3>
-
-
-
-                    {
-                        review.body &&
-
-                        <p
-                            style={{
-                                color:"#555",
-                                lineHeight:"1.6",
-                            }}
-                        >
-
-                            {review.body}
-
-                        </p>
-                    }
-
-
-
-
-
-                    {/* Ratings */}
-
-                    <div
-                        style={{
-                            display:"grid",
-                            gridTemplateColumns:
-                                "repeat(3,1fr)",
-
-                            gap:"15px",
-
-                            marginTop:"20px",
-                        }}
-                    >
-
-
-                        <div>
-                            Taste
-                            <br/>
-                            <Stars
-                                rating={
-                                    review.tasteRating
-                                }
-                            />
-                        </div>
-
-
-                        <div>
-                            Value
-                            <br/>
-                            <Stars
-                                rating={
-                                    review.valueRating
-                                }
-                            />
-                        </div>
-
-
-
-                        <div>
-                            Ambiance
-                            <br/>
-                            <Stars
-                                rating={
-                                    review.ambianceRating
-                                }
-                            />
-                        </div>
-
-
-                    </div>
-
-
-
-
-
-                    {/* Overall */}
-
-                    <div
-                        style={{
-                            marginTop:"20px",
-                            fontSize:"18px",
-                            fontWeight:"bold",
-                        }}
-                    >
-
-                        Overall:
-                        {" "}
-                        {overall.toFixed(1)}
-                        /5 ⭐
-
-                    </div>
-
-
-
-
-
-                    {/* Trust Score */}
-
-                    <div
-                        style={{
-                            marginTop:"20px",
-                            padding:"15px",
-                            background:"#fafafa",
-                            borderRadius:"12px",
-                        }}
-                    >
-
-                        <div
-                            style={{
-                                display:"flex",
-                                justifyContent:"space-between",
-                                marginBottom:"8px",
-                            }}
-                        >
-
-                            <strong>
-                                Trust Score
-                            </strong>
-
-
-                            <span
-                                style={{
-                                    color:trust.color,
-                                    background:
-                                        trust.background,
-
-                                    padding:
-                                        "4px 10px",
-
-                                    borderRadius:"15px",
-
-                                    fontWeight:"bold",
-                                }}
-                            >
-
-                                {trustScore}/100
-                                {" "}
-                                {trust.label}
-
-                            </span>
-
-
-                        </div>
-
-
-                        <div
-                            style={{
-                                height:"10px",
-                                background:"#ddd",
-                                borderRadius:"10px",
-                            }}
-                        >
-
-                            <div
-
-                                style={{
-
-                                    width:
-                                        `${trustScore}%`,
-
-                                    height:"100%",
-
-                                    background:
-                                        trust.color,
-
-                                    borderRadius:"10px",
-
-                                }}
-
-                            />
-
-
-                        </div>
-
-
-                    </div>
-
-
-
-
-
-                    {/* Verification */}
-
-                    {
-                        review.verification &&
-
-                        <div
-                            style={{
-                                marginTop:"20px",
-                                padding:"15px",
-                                background:"#f8f9fa",
-                                borderRadius:"12px",
-                            }}
-                        >
-
-                            <strong>
-                                Receipt Verification
-                            </strong>
-
-
-                            <p>
-                                Status:
-                                {" "}
-                                {
-                                    review.verification.status
-                                }
-                            </p>
 
 
                             {
-                                review.verification.imageUrl &&
+                                review.body &&
 
-                                <a
-                                    href={
-                                        review.verification.imageUrl
-                                    }
-
-                                    target="_blank"
-
-                                    rel="noopener noreferrer"
-
+                                <p
+                                    style={{
+                                        color: "#555",
+                                        lineHeight: "1.6",
+                                    }}
                                 >
 
-                                    View Receipt 📄
+                                    {review.body}
 
-                                </a>
+                                </p>
+                            }
+
+
+
+
+
+                            {/* Ratings */}
+
+                            <div
+                                style={{
+
+                                    display: "grid",
+
+                                    gridTemplateColumns:
+                                        "repeat(3,1fr)",
+
+                                    gap: "15px",
+
+                                    marginTop: "20px",
+                                }}
+                            >
+
+
+                                <div>
+                                    Taste
+                                    <br />
+                                    <Stars
+                                        rating={
+                                            review.tasteRating
+                                        }
+                                    />
+                                </div>
+
+
+                                <div>
+                                    Value
+                                    <br />
+                                    <Stars
+                                        rating={
+                                            review.valueRating
+                                        }
+                                    />
+                                </div>
+
+
+
+                                <div>
+                                    Ambiance
+                                    <br />
+                                    <Stars
+                                        rating={
+                                            review.ambianceRating
+                                        }
+                                    />
+                                </div>
+
+
+                            </div>
+
+
+
+
+
+                            {/* Overall */}
+
+                            <div
+                                style={{
+                                    marginTop: "20px",
+                                    fontSize: "18px",
+                                    fontWeight: "bold",
+                                }}
+                            >
+
+                                Overall:
+                                {" "}
+                                {overall.toFixed(1)}
+                                /5 ⭐
+
+                            </div>
+
+
+
+
+
+                            {/* Trust Score */}
+
+                            <div
+                                style={{
+
+                                    marginTop: "20px",
+
+                                    padding: "15px",
+
+                                    background: "#fafafa",
+
+                                    borderRadius: "12px",
+
+                                }}
+                            >
+
+                                <div
+                                    style={{
+
+                                        display: "flex",
+
+                                        justifyContent: "space-between",
+
+                                        marginBottom: "8px",
+
+                                    }}
+                                >
+
+                                    <strong>
+                                        Trust Score
+                                    </strong>
+
+
+                                    <span
+                                        style={{
+
+                                            color: trust.color,
+
+                                            background:
+                                                trust.background,
+
+                                            padding:
+                                                "4px 10px",
+
+                                            borderRadius: "15px",
+
+                                            fontWeight: "bold",
+                                        }}
+                                    >
+
+                                        {trustScore}/100
+                                        {" "}
+                                        {trust.label}
+
+                                    </span>
+
+
+                                </div>
+
+
+                                <div
+                                    style={{
+
+                                        height: "10px",
+
+                                        background: "#ddd",
+
+                                        borderRadius: "10px",
+
+                                    }}
+                                >
+
+                                    <div
+
+                                        style={{
+
+                                            width:
+                                                `${trustScore}%`,
+
+                                            height: "100%",
+
+                                            background:
+                                                trust.color,
+
+                                            borderRadius: "10px",
+
+                                            transition: "width 0.6s ease",
+
+                                        }}
+
+                                    />
+
+
+                                </div>
+
+
+                            </div>
+
+
+
+
+
+                            {/* Verification */}
+
+                            {
+                                review.verification &&
+
+                                <div
+                                    style={{
+
+                                        marginTop: "20px",
+
+                                        padding: "15px",
+
+                                        background: "#f8f9fa",
+
+                                        borderRadius: "12px",
+
+                                    }}
+                                >
+
+                                    <strong>
+                                        Receipt Verification
+                                    </strong>
+
+
+                                    <p>
+                                        Status:
+                                        {" "}
+                                        {
+                                            review.verification.status
+                                        }
+                                    </p>
+
+
+                                    {
+                                        review.verification.imageUrl &&
+
+                                        <a
+                                            href={
+                                                review.verification.imageUrl
+                                            }
+
+                                            target="_blank"
+
+                                            rel="noopener noreferrer"
+
+                                        >
+
+                                            View Receipt 📄
+
+                                        </a>
+
+                                    }
+
+
+                                </div>
 
                             }
+
+
+
+
+
+                            {/* Footer */}
+
+                            <div
+                                style={{
+
+                                    marginTop: "20px",
+
+                                    paddingTop: "15px",
+
+                                    borderTop:
+                                        "1px solid #eee",
+
+                                    color: "#888",
+
+                                    display: "flex",
+
+                                    justifyContent: "space-between",
+
+                                    fontSize: "14px",
+
+                                }}
+                            >
+
+                                <span>
+                                    👤
+                                    {" "}
+                                    {
+                                        review.user?.username
+                                        ||
+                                        "Anonymous"
+                                    }
+                                </span>
+
+
+                                <span>
+                                    {
+                                        new Date(review.createdAt).toLocaleDateString("en-US", {
+                                            year: "numeric",
+                                            month: "long",
+                                            day: "numeric",
+                                        })
+                                    }
+                                </span>
+
+
+                            </div>
+
 
 
                         </div>
 
-                    }
 
+                    );
 
-
-
-
-                    {/* Footer */}
-
-                    <div
-                        style={{
-                            marginTop:"20px",
-                            paddingTop:"15px",
-                            borderTop:
-                                "1px solid #eee",
-
-                            color:"#888",
-
-                            display:"flex",
-                            justifyContent:"space-between",
-
-                            fontSize:"14px",
-                        }}
-                    >
-
-                        <span>
-                            👤
-                            {" "}
-                            {
-                                review.user?.username
-                                ||
-                                "Anonymous"
-                            }
-                        </span>
-
-
-                        <span>
-
-                            {
-                                new Date(
-                                    review.createdAt
-                                ).toLocaleDateString()
-                            }
-
-                        </span>
-
-
-                    </div>
-
-
-
-                </div>
-
-
-                );
-
-            })
-        }
+                })
+            }
 
 
         </div>

@@ -358,15 +358,9 @@ function Register() {
                 />
 
 
-
-
                 <button
 
                     type="submit"
-
-                    onClick={
-                        () => navigate("/login")
-                    }
 
                     style={{
 

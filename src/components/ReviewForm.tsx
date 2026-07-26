@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 
 interface ReviewFormData {
@@ -27,17 +27,21 @@ export default function ReviewForm({
 
   isLoading = false,
 
+  initialRestaurantId,
+
 }: {
 
   addReview: (review: ReviewFormData) => void;
 
   isLoading?: boolean;
 
+  initialRestaurantId?: number;
+
 }) {
 
 
   const [restaurantId, setRestaurantId] =
-    useState<number>(0);
+    useState<number>(initialRestaurantId || 0);
 
   const [title, setTitle] =
     useState("");
@@ -57,7 +61,11 @@ export default function ReviewForm({
   const [receipt, setReceipt] =
     useState<File | null>(null);
 
-
+  useEffect(() => {
+    if (initialRestaurantId) {
+      setRestaurantId(initialRestaurantId);
+    }
+  }, [initialRestaurantId]);
 
 
   function submit(
@@ -67,16 +75,13 @@ export default function ReviewForm({
     e.preventDefault();
 
 
-    if (!restaurantId) {
+    if (!restaurantId || restaurantId <= 0) {
 
-      alert(
-        "Please enter restaurant ID"
-      );
+      alert("Please enter a valid restaurant ID");
 
       return;
 
     }
-
 
 
     addReview({
@@ -101,8 +106,6 @@ export default function ReviewForm({
 
 
     // reset
-
-    setRestaurantId(0);
 
     setTitle("");
 
@@ -355,10 +358,11 @@ export default function ReviewForm({
         }
 
 
-        placeholder="Restaurant ID"
+        placeholder="Enter Restaurant ID"
 
         required
 
+        disabled={!!initialRestaurantId}
 
         style={{
           ...inputStyle,
@@ -367,17 +371,13 @@ export default function ReviewForm({
 
           marginBottom: "20px",
 
-          color: "#ffffff",
+          background: initialRestaurantId ? "#f5f5f5" : "white",
 
-          caretColor: "#ffffff",
+          cursor: initialRestaurantId ? "not-allowed" : "text",
 
         }}
 
       />
-
-
-
-
 
 
 
@@ -464,6 +464,10 @@ export default function ReviewForm({
 
           caretColor: "#ffffff",
 
+          resize: "vertical",
+
+          fontFamily: "inherit",
+
         }}
 
       />
@@ -531,10 +535,6 @@ export default function ReviewForm({
 
 
 
-
-
-
-
       <div
 
         style={{
@@ -578,16 +578,15 @@ export default function ReviewForm({
         />
 
 
-        {
-          receipt &&
+        {receipt &&
 
-          <p
-            style={{
-              color: "#2e7d32",
-            }}
-          >
-            ✓ {receipt.name}
-          </p>
+          (
+            <p style={{ color: "#2e7d32", marginTop: "8px", fontSize: "14px" }}>
+
+              ✓ {receipt.name} ({(receipt.size / 1024).toFixed(1)} KB)
+
+            </p>
+          )
 
         }
 
