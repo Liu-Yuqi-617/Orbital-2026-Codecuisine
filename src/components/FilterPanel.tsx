@@ -39,7 +39,7 @@ function FilterPanel({
                 Minimum Rating:
                 <input
                     type="number"
-                    min="1"
+                    min="0"
                     max="5"
                     step="0.5"
                     style={{ marginLeft: "5px", width: "50px" }}
