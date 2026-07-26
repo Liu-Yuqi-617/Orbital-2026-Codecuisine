@@ -23,6 +23,7 @@ Users can:
 * Search and filter restaurants dynamically
 * Evaluate review by its dining verification
 * Evaluate review by its Quality & Trust Score
+* Add your favorite restaurants into Quick-save wishlist
 
 ---
 
@@ -37,6 +38,7 @@ CodeCuisine aims to provide a more trustworthy and informative food discovery ex
 * Review quality assessment
 * Personalized quick-saved wishlist
 * Dynamic search & filter system
+* Review quality & trust scoring
 
 ---
 
@@ -365,6 +367,34 @@ Supported categories:
 Users can filter restaurants based on expected spending level.
 
 ---
+
+# 6. Wishlist & Quick Save
+
+The **Wishlist** feature enables users to bookmark restaurants they are interested in, allowing them to revisit their favorite restaurants without searching again.
+
+### Features
+
+- **Quick Save**
+  - Save restaurants directly from the Search page with a single click.
+  - Instantly add restaurants to a personalized wishlist while browsing.
+
+- **Restaurant Information**
+  - Each saved restaurant includes:
+    - Restaurant name
+    - Cuisine category
+    - Rating
+    - Restaurant image
+
+- **Wishlist Management**
+  - Display all saved restaurants in a clean card-based layout.
+  - Remove restaurants from the wishlist at any time.
+  - Automatically update the interface after any changes.
+
+- **Frontend Data Persistence**
+  - Wishlist data is currently stored using the browser's **localStorage**.
+  - Saved restaurants remain available after page refreshes.
+  - This implementation demonstrates the complete frontend user experience before backend integration.
+
 
 # 7. Review Display and Credibility Information
 
