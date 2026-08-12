@@ -1,867 +1,1206 @@
-import { useState, useEffect, useRef } from "react";
-import Navbar from "../components/Navbar";
-import { getWishlist, addToWishlist, removeFromWishlist, searchRestaurants } from "../api";
+import {
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+
 import { useNavigate } from "react-router-dom";
-import type { SimpleRestaurant } from "../types";
 
-interface WishlistItem {
-  id: number;
-  userId: number;
-  restaurantId: string;
-  notes: string;
-  tags: string;
-  createdAt: string;
-}
+import ReviewForm from "../components/ReviewForm";
+import ReviewList from "../components/ReviewList";
+import Navbar from "../components/Navbar";
 
-interface WishlistItemWithDetails extends WishlistItem {
-  restaurantDetails?: SimpleRestaurant | null;
-  displayName?: string;
-}
+import {
+  createReview,
+  getMyReviews,
+  uploadReceipt,
+  searchRestaurants,
+} from "../api";
 
-export default function Wishlist() {
+import type {
+  Review,
+  CreateReviewRequest,
+  SimpleRestaurant,
+} from "../types";
+
+
+export default function Reviews() {
+
   const navigate = useNavigate();
-  const [items, setItems] = useState<WishlistItemWithDetails[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<SimpleRestaurant[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
-  const [showSearchResults, setShowSearchResults] = useState(false);
-  const [newNotes, setNewNotes] = useState("");
-  const [newTags, setNewTags] = useState("");
-  const [selectedRestaurant, setSelectedRestaurant] = useState<SimpleRestaurant | null>(null);
-  const [removingId, setRemovingId] = useState<string | null>(null);
-  const searchRef = useRef<HTMLDivElement>(null);
+
+
+  const [reviews, setReviews] =
+    useState<Review[]>([]);
+
+  const [isLoading, setIsLoading] =
+    useState(false);
+
+
+  const [searchQuery, setSearchQuery] =
+    useState("");
+
+  const [searchResults, setSearchResults] =
+    useState<SimpleRestaurant[]>([]);
+
+  const [isSearching, setIsSearching] =
+    useState(false);
+
+  const [
+    showSearchResults,
+    setShowSearchResults,
+  ] = useState(false);
+
+  const [
+    selectedRestaurant,
+    setSelectedRestaurant,
+  ] =
+    useState<SimpleRestaurant | null>(
+      null
+    );
+
+  const searchRef =
+    useRef<HTMLDivElement>(null);
+
 
   useEffect(() => {
-    loadWishlist();
 
-    function handleClickOutside(event: MouseEvent) {
-      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+    loadMyReviews();
+
+
+    function handleClickOutside(
+      event: MouseEvent
+    ) {
+
+      if (
+        searchRef.current &&
+        !searchRef.current.contains(
+          event.target as Node
+        )
+      ) {
+
         setShowSearchResults(false);
+
       }
+
     }
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
-  async function loadWishlist() {
-    try {
-      setLoading(true);
-      const res = await getWishlist();
-      const wishlistItems = res.data || [];
+    document.addEventListener(
+      "mousedown",
+      handleClickOutside
+    );
 
-      const itemsWithDetails = await Promise.all(
-        wishlistItems.map(async (item: WishlistItem) => {
-          // 首先检查缓存
-          const cachedData = localStorage.getItem(`restaurant_data_${item.restaurantId}`);
 
-          if (cachedData) {
-            try {
-              const restaurant = JSON.parse(cachedData);
-              return {
-                ...item,
-                restaurantDetails: restaurant,
-                displayName: restaurant.name || `Restaurant #${item.restaurantId}`,
-              };
-            } catch (e) {
+    return () => {
 
-            }
-          }
-
-          try {
-            const searchRes = await searchRestaurants({
-              query: item.restaurantId,
-              lat: 1.3521,
-              lng: 103.8198,
-              radius: 50000,
-              page: 1,
-              page_size: 1,
-            });
-
-            const restaurant = searchRes.data.restaurants?.[0] || null;
-
-            if (restaurant) {
-              localStorage.setItem(`restaurant_name_${item.restaurantId}`, restaurant.name);
-              localStorage.setItem(`restaurant_data_${item.restaurantId}`, JSON.stringify(restaurant));
-            }
-
-            return {
-              ...item,
-              restaurantDetails: restaurant,
-              displayName: restaurant?.name || `Restaurant #${item.restaurantId}`,
-            };
-          } catch (err) {
-            console.error(`Failed to fetch details for ${item.restaurantId}:`, err);
-            return {
-              ...item,
-              restaurantDetails: null,
-              displayName: `Restaurant #${item.restaurantId}`,
-            };
-          }
-        })
+      document.removeEventListener(
+        "mousedown",
+        handleClickOutside
       );
 
-      setItems(itemsWithDetails);
-    } catch (err) {
-      console.error("Failed to load wishlist:", err);
-      alert("Failed to load wishlist. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  }
+    };
 
-  async function performSearch() {
-    if (!searchQuery.trim()) return;
+  }, []);
 
-    setIsSearching(true);
-    setShowSearchResults(true);
+
+
+  async function loadMyReviews() {
 
     try {
+
+      const res =
+        await getMyReviews();
+
+      setReviews(
+        res.data || []
+      );
+
+    }
+
+    catch (err) {
+
+      console.error(
+        "Failed to load reviews:",
+        err
+      );
+
+    }
+
+  }
+
+
+
+  async function performSearch() {
+
+    if (!searchQuery.trim()) {
+      return;
+    }
+
+
+    setIsSearching(true);
+
+    setShowSearchResults(true);
+
+
+    try {
+
       let lat = 1.3521;
       let lng = 103.8198;
 
+
       if (navigator.geolocation) {
+
         try {
-          const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
-            navigator.geolocation.getCurrentPosition(resolve, reject, {
-              enableHighAccuracy: true,
-              timeout: 5000,
-            });
-          });
-          lat = pos.coords.latitude;
-          lng = pos.coords.longitude;
-        } catch (err) {
-          console.warn("Geolocation failed, using default:", err);
+
+          const pos =
+            await new Promise<
+              GeolocationPosition
+            >(
+              (resolve, reject) => {
+
+                navigator.geolocation
+                  .getCurrentPosition(
+                    resolve,
+                    reject,
+                    {
+                      enableHighAccuracy:
+                        true,
+                      timeout: 5000,
+                    }
+                  );
+
+              }
+            );
+
+
+          lat =
+            pos.coords.latitude;
+
+          lng =
+            pos.coords.longitude;
+
         }
+
+        catch (err) {
+
+          console.warn(
+            "Geolocation failed, using default Singapore location:",
+            err
+          );
+
+        }
+
       }
 
-      const res = await searchRestaurants({
-        query: searchQuery,
-        lat,
-        lng,
-        radius: 10000,
-        page: 1,
-        page_size: 10,
-      });
 
-      setSearchResults(res.data.restaurants || []);
-    } catch (err) {
-      console.error("Search failed:", err);
-      alert("Failed to search restaurants. Please try again.");
-    } finally {
-      setIsSearching(false);
+      const res =
+        await searchRestaurants({
+          query: searchQuery,
+          lat,
+          lng,
+          radius: 10000,
+          page: 1,
+          page_size: 10,
+        });
+
+
+      setSearchResults(
+        res.data.restaurants || []
+      );
+
     }
+
+    catch (err) {
+
+      console.error(
+        "Search failed:",
+        err
+      );
+
+
+      alert(
+        "Failed to search restaurants. Please try again."
+      );
+
+    }
+
+    finally {
+
+      setIsSearching(false);
+
+    }
+
   }
 
-  async function handleSelectRestaurant(restaurant: SimpleRestaurant) {
-    setSelectedRestaurant(restaurant);
-    setSearchQuery(restaurant.name);
+
+
+  function handleSelectRestaurant(
+    restaurant: SimpleRestaurant
+  ) {
+
+    setSelectedRestaurant(
+      restaurant
+    );
+
+    setSearchQuery(
+      restaurant.name
+    );
+
+    setShowSearchResults(
+      false
+    );
+
+  }
+
+
+
+  function clearSelectedRestaurant() {
+
+    setSelectedRestaurant(null);
+
+    setSearchQuery("");
+
+    setSearchResults([]);
+
     setShowSearchResults(false);
+
   }
 
-  async function handleAdd(e: React.FormEvent) {
-    e.preventDefault();
+
+
+  async function addReview(
+    reviewData: {
+      title: string;
+      body: string;
+      taste: number;
+      value: number;
+      ambiance: number;
+      receipt?: File;
+    }
+  ) {
 
     if (!selectedRestaurant) {
-      alert("Please search and select a restaurant first");
+
+      alert(
+        "Please select a restaurant first."
+      );
+
       return;
+
     }
+
 
     try {
-      const tagsArray = newTags.split(",").map(t => t.trim()).filter(Boolean);
 
-      const restaurantId = selectedRestaurant.place_id || selectedRestaurant.id.toString();
+      setIsLoading(true);
 
-      await addToWishlist(restaurantId, newNotes || undefined, tagsArray);
 
-      localStorage.setItem(`restaurant_name_${restaurantId}`, selectedRestaurant.name);
-      localStorage.setItem(`restaurant_data_${restaurantId}`, JSON.stringify(selectedRestaurant));
-      localStorage.setItem(`wishlist_added_${restaurantId}`, new Date().toISOString());
-      localStorage.setItem(`wishlist_item_${restaurantId}`, JSON.stringify({
-        createdAt: new Date().toISOString(),
-        notes: newNotes,
-        tags: tagsArray,
-      }));
+      // IMPORTANT:
+      // Review API requires NUMBER restaurantId
+      const restaurantId =
+        selectedRestaurant.id;
 
-      setSelectedRestaurant(null);
-      setSearchQuery("");
-      setNewNotes("");
-      setNewTags("");
-      setSearchResults([]);
-      setShowSearchResults(false);
 
-      await loadWishlist();
+      const createData:
+        CreateReviewRequest = {
 
-      alert(`"${selectedRestaurant.name}" added to wishlist!`);
-    } catch (err: any) {
-      alert(err.response?.data?.message || "Failed to add to wishlist");
+        restaurantId,
+
+        tasteRating:
+          reviewData.taste,
+
+        valueRating:
+          reviewData.value,
+
+        ambianceRating:
+          reviewData.ambiance,
+
+        title:
+          reviewData.title,
+
+        body:
+          reviewData.body,
+
+      };
+
+
+      const res =
+        await createReview(
+          createData
+        );
+
+
+      const newReview:
+        Review =
+        res.data;
+
+
+      if (
+        reviewData.receipt &&
+        newReview.id
+      ) {
+
+        try {
+
+          await uploadReceipt(
+            newReview.id,
+            reviewData.receipt
+          );
+
+
+          newReview.isVerified =
+            true;
+
+        }
+
+        catch (err) {
+
+          console.error(
+            "Receipt upload failed:",
+            err
+          );
+
+
+          alert(
+            "Review submitted but receipt upload failed."
+          );
+
+        }
+
+      }
+
+
+      await loadMyReviews();
+
+
+      alert(
+        "Review submitted successfully!"
+      );
+
+
+      navigate(
+        `/restaurant/${restaurantId}`
+      );
+
     }
+
+    catch (err: any) {
+
+      console.error(
+        "Failed to submit review:",
+        err
+      );
+
+
+      alert(
+        err.response?.data?.message ||
+        "Failed to submit review"
+      );
+
+    }
+
+    finally {
+
+      setIsLoading(false);
+
+    }
+
   }
 
-  async function handleRemove(restaurantId: string, displayName: string) {
-    if (!restaurantId || restaurantId === 'undefined' || restaurantId === 'null' || restaurantId === 'unknown') {
-      console.error('Invalid restaurantId for removal:', restaurantId);
-      alert('Cannot remove: Invalid restaurant ID');
-      return;
-    }
 
-    console.log('Removing from wishlist with restaurantId:', restaurantId);
-
-    if (!confirm(`Remove "${displayName}" from your wishlist?`)) {
-      return;
-    }
-
-    setRemovingId(restaurantId);
-    try {
-      await removeFromWishlist(restaurantId);
-      setItems(items.filter(item => item.restaurantId !== restaurantId));
-
-      localStorage.removeItem(`restaurant_name_${restaurantId}`);
-      localStorage.removeItem(`restaurant_data_${restaurantId}`);
-      localStorage.removeItem(`wishlist_added_${restaurantId}`);
-      localStorage.removeItem(`wishlist_item_${restaurantId}`);
-    } catch (err) {
-      console.error("Failed to remove:", err);
-      alert("Failed to remove from wishlist");
-    } finally {
-      setRemovingId(null);
-    }
-  }
-
-  function getDisplayInfo(item: WishlistItemWithDetails): { name: string; id: string } {
-    const name = item.displayName ||
-      item.restaurantDetails?.name ||
-      localStorage.getItem(`restaurant_name_${item.restaurantId}`) ||
-      `Restaurant #${item.restaurantId}`;
-    return {
-      name,
-      id: item.restaurantId,
-    };
-  }
 
   return (
-    <div
-      style={{
 
-        minHeight: "100vh",
+    <>
 
-        background: "#F8F5F0"
-
-      }}
-    >
       <Navbar />
+
 
       <div
         style={{
-
-          maxWidth: "1000px",
-
-          margin: "0 auto",
-
+          minHeight: "100vh",
+          background: "#F8F5F0",
           padding: "40px 20px",
-
         }}
       >
-        <div>
 
-          <h1 style={{
-
-            fontSize: "36px",
-
-            color: "#2D3436",
-
-            fontWeight: 800,
-
-          }}>
-            ❤️ My Wishlist
-          </h1>
-
-          <p style={{
-
-            color: "#636E72",
-
-            fontSize: "18px",
-
-            marginBottom: "30px",
-
-          }}>
-            Save restaurants you want to visit.
-          </p>
-
-          <div style={{ display: "flex", gap: "10px" }}>
-            <span style={{
-              background: "white",
-              padding: "8px 16px",
-              borderRadius: "20px",
-              fontSize: "14px",
-              color: "#2D3436",
-              marginBottom: "10px",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
-            }}>
-              {items.length} {items.length === 1 ? "restaurant" : "restaurants"} saved
-            </span>
-          </div>
-
-        </div>
-
-
-        {/* Add Form */}
-        <form
-          onSubmit={handleAdd}
+        <div
           style={{
-
-            background: "white",
-
-            padding: "25px",
-
-            borderRadius: "18px",
-
-            marginBottom: "30px",
-
-            boxShadow: "0 6px 20px rgba(0,0,0,0.08)",
-
+            maxWidth: "1000px",
+            margin: "0 auto",
           }}
         >
 
-          <h3 style={{ marginTop: 0 }}>Add Restaurant</h3>
 
-          <div ref={searchRef} style={{ display: "flex", gap: "15px", flexWrap: "wrap" }}>
-            <div style={{ position: "relative" }}>
-              <input
-                placeholder="Search restaurant by name..."
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  if (!e.target.value) {
-                    setShowSearchResults(false);
-                    setSelectedRestaurant(null);
-                  }
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    performSearch();
-                  }
-                }}
-                onFocus={() => {
-                  if (searchQuery.trim() && searchResults.length > 0) {
-                    setShowSearchResults(true);
-                  }
-                }}
-                required
-                style={{
+          {/* Hero */}
 
-                  flex: 1,
+          <div
+            style={{
+              marginBottom: "40px",
+            }}
+          >
 
-                  minWidth: "200px",
-
-                  padding: "12px",
-
-                  borderRadius: "10px",
-
-                  border: "1px solid #E8E1D9",
-
-                  fontSize: "15px",
-
-                  marginBottom: "10px"
-
-                }}
-              />
-
-              {selectedRestaurant && (
-                <span style={{
-
-                  position: "absolute",
-
-                  right: "12px",
-
-                  top: "50%",
-
-                  transform: "translateY(-50%)",
-
-                  color: "#4caf50",
-
-                  fontSize: "20px",
-
-                }}>
-                  ✓
-                </span>
-              )}
-            </div>
-
-            <button
-              type="button"
-              onClick={performSearch}
-              disabled={isSearching}
+            <h1
               style={{
-                padding: "12px 20px",
-                borderRadius: "10px",
-                border: "1px solid #E8E1D9",
-                background: "#f5f5f5",
-                cursor: isSearching ? "not-allowed" : "pointer",
-                fontWeight: 600,
+                fontSize: "38px",
+                marginBottom: "12px",
                 color: "#2D3436",
-                marginBottom: "10px"
+                fontWeight: 800,
+                letterSpacing:
+                  "-0.5px",
               }}
             >
-              {isSearching ? "Searching..." : "🔍 Search"}
-            </button>
+              🍽 My Reviews
+            </h1>
 
-            {showSearchResults && (
-              <div style={{
 
-                position: "absolute",
+            <p
+              style={{
+                color: "#2D3436",
+                fontSize: "19px",
+                fontWeight: 500,
+                lineHeight: "1.6",
+              }}
+            >
+              Manage your dining experiences
+              and verifications.
+            </p>
 
-                zIndex: 10,
-
-                background: "white",
-
-                border: "1px solid #E8E1D9",
-
-                borderRadius: "10px",
-
-                marginTop: "5px",
-
-                maxHeight: "300px",
-
-                overflowY: "auto",
-
-                boxShadow: "0 8px 25px rgba(0,0,0,0.15)",
-
-                width: "100%",
-
-              }}>
-                {isSearching ? (
-                  <div style={{ padding: "20px", textAlign: "center", color: "#777" }}>
-                    Searching...
-                  </div>
-                ) : searchResults.length === 0 ? (
-                  <div style={{ padding: "20px", textAlign: "center", color: "#777" }}>
-                    No restaurants found. Try a different search.
-                  </div>
-                ) : (
-                  searchResults.map((restaurant) => {
-                    const isAlreadyInWishlist = items.some(
-                      item => item.restaurantId === (restaurant.place_id || restaurant.id.toString())
-                    );
-
-                    return (
-                      <div
-                        key={restaurant.id}
-                        onClick={() => !isAlreadyInWishlist && handleSelectRestaurant(restaurant)}
-                        style={{
-
-                          padding: "12px 16px",
-
-                          cursor: "pointer",
-
-                          borderBottom: "1px solid #f0f0f0",
-
-                          display: "flex",
-
-                          justifyContent: "space-between",
-
-                          alignItems: "center",
-
-                          opacity: isAlreadyInWishlist ? 0.6 : 1,
-
-                          background: isAlreadyInWishlist ? "#f9f9f9" : "white",
-
-                        }}
-                      >
-                        <div style={{ flex: 1 }}>
-
-                          <div style={{ fontWeight: 600 }}>
-                            {restaurant.name}
-                            {isAlreadyInWishlist && (
-                              <span style={{
-                                marginLeft: "8px",
-                                fontSize: "12px",
-                                color: "#4caf50",
-                                fontWeight: "normal",
-                              }}>
-                                ✓ Already saved
-                              </span>
-                            )}
-                          </div>
-
-                          <div style={{ fontSize: "13px", color: "#777" }}>
-                            ID: {restaurant.place_id || restaurant.id}
-                            {restaurant.address && ` · ${restaurant.address}`}
-                            {restaurant.cuisine_type && restaurant.cuisine_type !== "unknown" && (
-                              <span> · 🍽 {restaurant.cuisine_type.charAt(0).toUpperCase() + restaurant.cuisine_type.slice(1)}</span>
-                            )}
-                          </div>
-
-                        </div>
-
-                        <div style={{ fontSize: "13px", color: "#555", textAlign: "right" }}>
-
-                          {restaurant.composite_score > 0 && (
-                            <span>⭐ {restaurant.composite_score.toFixed(1)}</span>
-                          )}
-                          {restaurant.price_level > 0 && (
-                            <span style={{ marginLeft: "8px" }}>
-                              💰 {"$".repeat(Math.min(restaurant.price_level, 4))}
-                            </span>
-                          )}
-                          {restaurant.distance && (
-                            <div style={{ fontSize: "12px", color: "#999" }}>
-                              {restaurant.distance.toFixed(0)}m away
-                            </div>
-                          )}
-
-                        </div>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-            )}
           </div>
 
-          {selectedRestaurant && (
-            <div style={{
 
-              background: "#f0fff0",
 
-              padding: "12px 16px",
+          {/* Write Review */}
 
-              borderRadius: "10px",
+          <section>
 
-              marginBottom: "15px",
+            <h2
+              style={{
+                fontSize: "28px",
+                marginBottom: "15px",
+                color: "#2D3436",
+              }}
+            >
+              ✍️ Write a Review
+            </h2>
 
-              border: "1px solid #c8e6c9",
 
-              display: "flex",
 
-              justifyContent: "space-between",
+            {/* Restaurant Search */}
 
-              alignItems: "center",
+            <div
+              style={{
+                background: "white",
+                padding: "22px",
+                borderRadius: "18px",
+                marginBottom: "22px",
+                boxShadow:
+                  "0 4px 15px rgba(0,0,0,0.06)",
+              }}
+            >
 
-            }}>
-              <div>
-
-                <strong>{selectedRestaurant.name}</strong>
-
-                <span style={{ marginLeft: "10px", color: "#777", fontSize: "14px" }}>
-                  ID: {selectedRestaurant.place_id || selectedRestaurant.id}
-                </span>
-
-                {selectedRestaurant.address && (
-                  <span style={{ marginLeft: "10px", color: "#777", fontSize: "14px" }}>
-                    · {selectedRestaurant.address}
-                  </span>
-                )}
-
-                {selectedRestaurant.cuisine_type && selectedRestaurant.cuisine_type !== "unknown" && (
-                  <span style={{ marginLeft: "10px", color: "#777", fontSize: "14px" }}>
-                    🍽 {selectedRestaurant.cuisine_type.charAt(0).toUpperCase() + selectedRestaurant.cuisine_type.slice(1)}
-                  </span>
-                )}
-
-              </div>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setSelectedRestaurant(null);
-                  setSearchQuery("");
-                }}
+              <h3
                 style={{
-
-                  background: "transparent",
-
-                  border: "none",
-
-                  color: "#c62828",
-
-                  cursor: "pointer",
-
-                  fontSize: "16px",
-
-                  padding: "4px 8px",
-
+                  marginTop: 0,
+                  marginBottom: "8px",
+                  color: "#2D3436",
                 }}
               >
-                ✕
-              </button>
-            </div>
-          )}
+                Select Restaurant
+              </h3>
 
-          <div style={{ display: "flex", gap: "15px", flexWrap: "wrap" }}>
-            <input
-              placeholder="Notes (optional)"
-              value={newNotes}
-              onChange={(e) => setNewNotes(e.target.value)}
-              style={{
 
-                flex: 1,
+              <p
+                style={{
+                  color: "#777",
+                  fontSize: "14px",
+                  marginTop: 0,
+                  marginBottom: "15px",
+                }}
+              >
+                Search for the restaurant
+                you want to review.
+              </p>
 
-                minWidth: "200px",
 
-                padding: "12px",
+              <div
+                ref={searchRef}
+                style={{
+                  position: "relative",
+                }}
+              >
 
-                borderRadius: "10px",
+                <div
+                  style={{
+                    display: "flex",
+                    gap: "10px",
+                  }}
+                >
 
-                border: "1px solid #E8E1D9",
+                  <input
+                    placeholder=
+                      "Search restaurant by name..."
 
-                fontSize: "15px",
+                    value={
+                      searchQuery
+                    }
 
-              }}
-            />
+                    onChange={(e) => {
 
-            <input
-              placeholder="Tags (comma separated)"
-              value={newTags}
-              onChange={(e) => setNewTags(e.target.value)}
-              style={{
-                flex: 1,
+                      const value =
+                        e.target.value;
 
-                minWidth: "200px",
 
-                padding: "12px",
+                      setSearchQuery(
+                        value
+                      );
 
-                borderRadius: "10px",
 
-                border: "1px solid #E8E1D9",
+                      if (
+                        selectedRestaurant &&
+                        value !==
+                          selectedRestaurant.name
+                      ) {
 
-                fontSize: "15px",
+                        setSelectedRestaurant(
+                          null
+                        );
 
-              }}
-            />
+                      }
 
-            <button
-              type="submit"
-              disabled={!selectedRestaurant}
-              style={{
 
-                padding: "12px 24px",
+                      if (!value) {
 
-                borderRadius: "10px",
+                        setSearchResults(
+                          []
+                        );
 
-                border: "none",
+                        setShowSearchResults(
+                          false
+                        );
 
-                background: selectedRestaurant ? "#E67E22" : "#ccc",
+                      }
 
-                color: "white",
+                    }}
 
-                fontWeight: 700,
+                    onKeyDown={(e) => {
 
-                cursor: selectedRestaurant ? "pointer" : "not-allowed",
+                      if (
+                        e.key === "Enter"
+                      ) {
 
-              }}
-            >
-              ❤️ Add to Wishlist
-            </button>
-          </div>
-        </form>
+                        e.preventDefault();
 
-        {/* Wishlist Items */}
-        {
-          loading ? (<p>Loading...</p>) :
+                        performSearch();
 
-            items.length === 0 ? (
-              <div style={{
+                      }
 
-                textAlign: "center",
+                    }}
 
-                padding: "60px",
+                    onFocus={() => {
 
-                background: "white",
+                      if (
+                        searchResults.length >
+                          0
+                      ) {
 
-                borderRadius: "18px",
+                        setShowSearchResults(
+                          true
+                        );
 
-                color: "#777",
-              }}>
+                      }
 
-                <h3>Your wishlist is empty 🍽</h3>
+                    }}
 
-                <p>Search for restaurants and add them here!</p>
+                    style={{
+                      flex: 1,
+                      padding:
+                        "13px 14px",
+                      borderRadius:
+                        "10px",
+                      border:
+                        "1px solid #E8E1D9",
+                      fontSize:
+                        "15px",
+                      outline:
+                        "none",
+                      color:
+                        "#2D3436",
+                      background:
+                        "white",
+                    }}
+                  />
+
+
+                  <button
+                    type="button"
+
+                    onClick={
+                      performSearch
+                    }
+
+                    disabled={
+                      isSearching
+                    }
+
+                    style={{
+                      padding:
+                        "12px 20px",
+                      borderRadius:
+                        "10px",
+                      border:
+                        "1px solid #E8E1D9",
+                      background:
+                        "#F5F5F5",
+                      cursor:
+                        isSearching
+                          ? "not-allowed"
+                          : "pointer",
+                      fontWeight:
+                        600,
+                      color:
+                        "#2D3436",
+                    }}
+                  >
+                    {
+                      isSearching
+                        ? "Searching..."
+                        : "🔍 Search"
+                    }
+                  </button>
+
+                </div>
+
+
+
+                {/* Search Results */}
+
+                {
+                  showSearchResults && (
+
+                    <div
+                      style={{
+                        position:
+                          "absolute",
+                        top:
+                          "calc(100% + 6px)",
+                        left: 0,
+                        right: 0,
+                        zIndex: 20,
+                        background:
+                          "white",
+                        border:
+                          "1px solid #E8E1D9",
+                        borderRadius:
+                          "10px",
+                        maxHeight:
+                          "320px",
+                        overflowY:
+                          "auto",
+                        boxShadow:
+                          "0 8px 25px rgba(0,0,0,0.15)",
+                      }}
+                    >
+
+                      {
+                        isSearching
+                          ? (
+
+                            <div
+                              style={{
+                                padding:
+                                  "20px",
+                                textAlign:
+                                  "center",
+                                color:
+                                  "#777",
+                              }}
+                            >
+                              Searching...
+                            </div>
+
+                          )
+
+                          :
+
+                          searchResults.length ===
+                          0
+
+                          ? (
+
+                            <div
+                              style={{
+                                padding:
+                                  "20px",
+                                textAlign:
+                                  "center",
+                                color:
+                                  "#777",
+                              }}
+                            >
+                              No restaurants found.
+                            </div>
+
+                          )
+
+                          :
+
+                          searchResults.map(
+                            (
+                              restaurant
+                            ) => (
+
+                              <div
+                                key={
+                                  restaurant.id
+                                }
+
+                                onClick={() =>
+                                  handleSelectRestaurant(
+                                    restaurant
+                                  )
+                                }
+
+                                style={{
+                                  padding:
+                                    "14px 16px",
+                                  cursor:
+                                    "pointer",
+                                  borderBottom:
+                                    "1px solid #F0F0F0",
+                                  display:
+                                    "flex",
+                                  justifyContent:
+                                    "space-between",
+                                  alignItems:
+                                    "center",
+                                  gap:
+                                    "15px",
+                                  background:
+                                    "white",
+                                }}
+                              >
+
+                                <div
+                                  style={{
+                                    flex: 1,
+                                  }}
+                                >
+
+                                  <div
+                                    style={{
+                                      fontWeight:
+                                        700,
+                                      color:
+                                        "#2D3436",
+                                      marginBottom:
+                                        "5px",
+                                    }}
+                                  >
+                                    {
+                                      restaurant.name
+                                    }
+                                  </div>
+
+
+                                  <div
+                                    style={{
+                                      fontSize:
+                                        "13px",
+                                      color:
+                                        "#777",
+                                      lineHeight:
+                                        "1.5",
+                                    }}
+                                  >
+
+                                    ID: {
+                                      restaurant.id
+                                    }
+
+
+                                    {
+                                      restaurant.address && (
+
+                                        <span>
+                                          {" · "}
+                                          📍 {
+                                            restaurant.address
+                                          }
+                                        </span>
+
+                                      )
+                                    }
+
+
+                                    {
+                                      restaurant.cuisine_type &&
+                                      restaurant.cuisine_type !==
+                                        "unknown" && (
+
+                                        <span>
+
+                                          {" · "}🍽{" "}
+
+                                          {
+                                            restaurant.cuisine_type
+                                              .charAt(0)
+                                              .toUpperCase() +
+                                            restaurant.cuisine_type
+                                              .slice(1)
+                                          }
+
+                                        </span>
+
+                                      )
+                                    }
+
+                                  </div>
+
+                                </div>
+
+
+                                <div
+                                  style={{
+                                    fontSize:
+                                      "13px",
+                                    color:
+                                      "#555",
+                                    textAlign:
+                                      "right",
+                                  }}
+                                >
+
+                                  {
+                                    restaurant.composite_score >
+                                      0 && (
+
+                                      <div>
+                                        ⭐{" "}
+                                        {
+                                          restaurant.composite_score.toFixed(
+                                            1
+                                          )
+                                        }
+                                      </div>
+
+                                    )
+                                  }
+
+
+                                  {
+                                    restaurant.price_level >
+                                      0 && (
+
+                                      <div>
+                                        💰{" "}
+                                        {
+                                          "$".repeat(
+                                            Math.min(
+                                              restaurant.price_level,
+                                              4
+                                            )
+                                          )
+                                        }
+                                      </div>
+
+                                    )
+                                  }
+
+                                </div>
+
+                              </div>
+
+                            )
+                          )
+                      }
+
+                    </div>
+
+                  )
+                }
 
               </div>
-            ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-                {items.filter(item => item.restaurantId && item.restaurantId !== 'undefined' && item.restaurantId !== 'null')
-                  .map((item, index) => {
-                    const { name, id } = getDisplayInfo(item);
-                    const restaurant = item.restaurantDetails;
-                    const isRemoving = removingId === item.restaurantId;
-                    const key = item.restaurantId || `item-${index}`;
 
-                    return (
-                      <div key={key}
+
+
+              {/* Selected Restaurant */}
+
+              {
+                selectedRestaurant && (
+
+                  <div
+                    style={{
+                      background:
+                        "#F0FFF0",
+                      padding:
+                        "14px 16px",
+                      borderRadius:
+                        "10px",
+                      marginTop:
+                        "16px",
+                      border:
+                        "1px solid #C8E6C9",
+                      display:
+                        "flex",
+                      justifyContent:
+                        "space-between",
+                      alignItems:
+                        "center",
+                      gap:
+                        "15px",
+                    }}
+                  >
+
+                    <div>
+
+                      <div
                         style={{
-
-                          background: "white",
-
-                          padding: "20px",
-
-                          borderRadius: "16px",
-
-                          boxShadow: "0 4px 15px rgba(0,0,0,0.06)",
-
-                          display: "flex",
-
-                          justifyContent: "space-between",
-
-                          alignItems: "center",
-
+                          fontSize:
+                            "13px",
+                          color:
+                            "#2E7D32",
+                          fontWeight:
+                            600,
+                          marginBottom:
+                            "4px",
                         }}
                       >
-                        <div>
+                        ✓ Selected Restaurant
+                      </div>
 
-                          <h3 style={{ margin: "0 0 4px 0", fontSize: "18px" }}>
-                            {name}
-                          </h3>
 
-                          <div style={{ fontSize: "13px", color: "#999", marginBottom: "8px" }}>
-                            ID: {id}
+                      <strong
+                        style={{
+                          color:
+                            "#2D3436",
+                        }}
+                      >
+                        {
+                          selectedRestaurant.name
+                        }
+                      </strong>
+
+
+                      <div
+                        style={{
+                          color:
+                            "#777",
+                          fontSize:
+                            "13px",
+                          marginTop:
+                            "4px",
+                        }}
+                      >
+                        Restaurant ID:{" "}
+                        {
+                          selectedRestaurant.id
+                        }
+                      </div>
+
+
+                      {
+                        selectedRestaurant.address && (
+
+                          <div
+                            style={{
+                              color:
+                                "#777",
+                              fontSize:
+                                "13px",
+                              marginTop:
+                                "3px",
+                            }}
+                          >
+                            📍{" "}
+                            {
+                              selectedRestaurant.address
+                            }
                           </div>
 
-                          {restaurant && (
-                            <div style={{
+                        )
+                      }
 
-                              display: "flex",
+                    </div>
 
-                              gap: "15px",
 
-                              fontSize: "14px",
+                    <button
+                      type="button"
 
-                              color: "#555",
+                      onClick={
+                        clearSelectedRestaurant
+                      }
 
-                              flexWrap: "wrap",
+                      style={{
+                        background:
+                          "transparent",
+                        border:
+                          "none",
+                        color:
+                          "#C62828",
+                        cursor:
+                          "pointer",
+                        fontSize:
+                          "18px",
+                        padding:
+                          "5px 8px",
+                      }}
+                    >
+                      ✕
+                    </button>
 
-                              marginBottom: "8px",
+                  </div>
 
-                            }}>
+                )
+              }
 
-                              {restaurant.address && (
-                                <span>📍 {restaurant.address}</span>
-                              )}
+            </div>
 
-                              {restaurant.cuisine_type && restaurant.cuisine_type !== "unknown" && (
-                                <span>🍽 {restaurant.cuisine_type.charAt(0).toUpperCase() + restaurant.cuisine_type.slice(1)}</span>
-                              )}
 
-                              {restaurant.price_level > 0 && (
-                                <span>💰 {"$".repeat(Math.min(restaurant.price_level, 4))}</span>
-                              )}
 
-                              {restaurant.composite_score > 0 && (
-                                <span>⭐ {restaurant.composite_score.toFixed(1)}</span>
-                              )}
+            <ReviewForm
+              addReview={
+                addReview
+              }
 
-                              {restaurant.verified_review_count > 0 && (
-                                <span style={{ color: "#2e7d32" }}>✓ {restaurant.verified_review_count} verified</span>
-                              )}
+              isLoading={
+                isLoading
+              }
 
-                            </div>
-                          )}
+              restaurantSelected={
+                !!selectedRestaurant
+              }
+            />
 
-                          {item.notes && (
-                            <p style={{ color: "#555", margin: "0 0 8px 0" }}>
-                              📝 {item.notes}
-                            </p>
-                          )}
+          </section>
 
-                          {item.tags && (
-                            <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-                              {item.tags.split(",").map((tag, i) => (
-                                <span key={i} style={{
 
-                                  background: "#F0E8DE",
 
-                                  padding: "4px 10px",
+          {/* Trust Guide */}
 
-                                  borderRadius: "10px",
+          <div
+            style={{
+              background:
+                "white",
+              padding:
+                "25px",
+              borderRadius:
+                "18px",
+              marginTop:
+                "35px",
+              boxShadow:
+                "0 4px 15px rgba(0,0,0,0.06)",
+            }}
+          >
 
-                                  fontSize: "13px",
+            <h2
+              style={{
+                fontSize:
+                  "28px",
+                marginBottom:
+                  "15px",
+                color:
+                  "#2D3436",
+              }}
+            >
+              🛡 Trust Score System
+            </h2>
 
-                                }}>
-                                  {tag.trim()}
-                                </span>
-                              ))}
-                            </div>
-                          )}
 
-                          <p style={{ color: "#999", fontSize: "13px", marginTop: "8px" }}>
-                            Added: {new Date(item.createdAt).toLocaleDateString('en-US', {
-                              year: 'numeric',
-                              month: 'long',
-                              day: 'numeric',
-                              hour: '2-digit',
-                              minute: '2-digit'
-                            })}
-                          </p>
+            <p>
+              Reviews are ranked based
+              on authenticity and detail.
+            </p>
 
-                        </div>
 
-                        <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-                          <button
-                            onClick={() => {
-                              const restaurantId = item.restaurantId;
-                              if (restaurantId && restaurantId !== 'undefined') {
-                                navigate(`/restaurant/${restaurantId}`);
-                              } else {
-                                alert('Cannot view: Invalid restaurant ID');
-                              }
-                            }}
-                            style={{
+            <div
+              style={{
+                display:
+                  "grid",
+                gridTemplateColumns:
+                  "repeat(auto-fit, minmax(180px, 1fr))",
+                gap:
+                  "15px",
+              }}
+            >
 
-                              padding: "10px 18px",
-
-                              borderRadius: "10px",
-
-                              border: "1px solid #E67E22",
-
-                              background: "white",
-
-                              color: "#E67E22",
-
-                              fontWeight: 600,
-
-                              cursor: "pointer",
-
-                            }}
-                          >
-                            View
-                          </button>
-
-                          <button
-                            onClick={() => handleRemove(item.restaurantId, name)}
-                            disabled={isRemoving || !item.restaurantId || item.restaurantId === 'undefined'}
-                            style={{
-
-                              padding: "10px 18px",
-
-                              borderRadius: "10px",
-
-                              border: "none",
-
-                              background: "#ffebee",
-
-                              color: "#c62828",
-
-                              fontWeight: 600,
-
-                              cursor: "pointer",
-
-                            }}
-                          >
-                            {isRemoving ? "Removing..." : "Remove"}
-                          </button>
-
-                        </div>
-                      </div>
-                    );
-                  }
-                  )}
+              <div>
+                ✅ Verified Visit
+                <br />
+                +40 points
               </div>
-            )
-        }
-      </div >
-    </div >
+
+
+              <div>
+                📷 Receipt Upload
+                <br />
+                +20 points
+              </div>
+
+
+              <div>
+                ✍️ Detailed Review
+                <br />
+                +15 points
+              </div>
+
+
+              <div>
+                ⭐ High Rating
+                <br />
+                +10 points
+              </div>
+
+
+              <div>
+                👤 Registered User
+                <br />
+                +5 points
+              </div>
+
+            </div>
+
+          </div>
+
+
+
+          {/* Reviews */}
+
+          <section
+            style={{
+              marginTop:
+                "45px",
+            }}
+          >
+
+            <h2
+              style={{
+                fontSize:
+                  "28px",
+                marginBottom:
+                  "15px",
+                color:
+                  "#2D3436",
+              }}
+            >
+              🌟 My Reviews
+            </h2>
+
+
+            <ReviewList
+              reviews={
+                reviews
+              }
+            />
+
+          </section>
+
+        </div>
+
+      </div>
+
+    </>
+
   );
+
 }
