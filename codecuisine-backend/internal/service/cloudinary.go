@@ -32,8 +32,6 @@ func (s *ImageService) UploadReceipt(ctx context.Context, fileHeader *multipart.
 	resp, err := s.cl.Upload.Upload(ctx, file, uploader.UploadParams{
 		Folder:       "codecuisine/receipts",
 		ResourceType: "image",
-		// Optional: limit image size to reduce storage
-		// Transformation: "w_1200,q_auto",
 	})
 	if err != nil {
 		return "", err

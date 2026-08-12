@@ -1,7 +1,7 @@
 package models
 
 import (
-	"time" // Industry-standard password hashing library              // ORM framework for database mapping
+	"time"
 )
 
 // User struct represents the user entity in the database
