@@ -12,7 +12,9 @@ import type {
   GPSCheckinRequest,
 } from '../types';
 
-const API_BASE_URL = 'http://localhost:8080/api';
+
+const API_BASE_URL = '/backend-api';
+
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -107,6 +109,25 @@ export const getVerification = (reviewId: number) => {
 // POST /api/verifications/gps
 export const gpsCheckin = (data: GPSCheckinRequest) => {
   return api.post<Verification>('/verifications/gps', data);
+};
+
+// POST /api/wishlist
+export const addToWishlist = (restaurantId: string, notes?: string, tags?: string[]) => {
+  return api.post('/wishlist', { restaurant_id: restaurantId, notes, tags });
+};
+
+// GET /api/wishlist
+export const getWishlist = () => {
+  return api.get('/wishlist');
+};
+
+// POST /api/wishlist/:restaurant_id (remove)
+export const removeFromWishlist = (restaurantId: string) => {
+  return api.post(`/wishlist/${restaurantId}`);
+};
+
+export const getRestaurantByPlaceId = (placeId: string) => {
+  return api.get(`/restaurants/place/${placeId}`);
 };
 
 export default api;

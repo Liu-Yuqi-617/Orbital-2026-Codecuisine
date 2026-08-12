@@ -2,75 +2,69 @@ import { useState } from "react";
 
 
 interface ReviewFormData {
-
-  restaurantId: number;
-
   title: string;
-
   body: string;
-
   taste: number;
-
   value: number;
-
   ambiance: number;
-
   receipt?: File;
-
 }
 
 
-
-export default function ReviewForm({
-
-  addReview,
-
-  isLoading = false,
-
-}: {
-
-  addReview: (review: ReviewFormData) => void;
+interface ReviewFormProps {
+  addReview: (
+    review: ReviewFormData
+  ) => void | Promise<void>;
 
   isLoading?: boolean;
 
-}) {
+  restaurantSelected: boolean;
+}
 
 
-  const [restaurantId, setRestaurantId] =
-    useState<number>(0);
+export default function ReviewForm({
+  addReview,
+  isLoading = false,
+  restaurantSelected,
+}: ReviewFormProps) {
+
 
   const [title, setTitle] =
     useState("");
 
+
   const [body, setBody] =
     useState("");
+
 
   const [taste, setTaste] =
     useState(5);
 
+
   const [value, setValue] =
     useState(5);
 
+
   const [ambiance, setAmbiance] =
     useState(5);
+
 
   const [receipt, setReceipt] =
     useState<File | null>(null);
 
 
 
-
-  function submit(
+  async function submit(
     e: React.FormEvent
   ) {
 
     e.preventDefault();
 
 
-    if (!restaurantId) {
+    if (!restaurantSelected) {
 
       alert(
-        "Please enter restaurant ID"
+        "Please select a restaurant first."
       );
 
       return;
@@ -78,47 +72,52 @@ export default function ReviewForm({
     }
 
 
+    try {
 
-    addReview({
+      await addReview({
 
-      restaurantId,
+        title,
 
-      title,
+        body,
 
-      body,
+        taste,
 
-      taste,
+        value,
 
-      value,
+        ambiance,
 
-      ambiance,
+        receipt:
+          receipt || undefined,
 
-      receipt:
-        receipt || undefined,
-
-    });
-
+      });
 
 
-    // reset
+      // Reset form after submit
 
-    setRestaurantId(0);
+      setTitle("");
 
-    setTitle("");
+      setBody("");
 
-    setBody("");
+      setTaste(5);
 
-    setTaste(5);
+      setValue(5);
 
-    setValue(5);
+      setAmbiance(5);
 
-    setAmbiance(5);
+      setReceipt(null);
 
-    setReceipt(null);
+    }
+
+    catch (err) {
+
+      console.error(
+        "Failed to submit review:",
+        err
+      );
+
+    }
 
   }
-
-
 
 
 
@@ -126,14 +125,13 @@ export default function ReviewForm({
     e: React.ChangeEvent<HTMLInputElement>
   ) {
 
-
     const file =
       e.target.files?.[0];
 
 
-    if (!file)
+    if (!file) {
       return;
-
+    }
 
 
     if (
@@ -144,6 +142,8 @@ export default function ReviewForm({
       alert(
         "Maximum file size is 5MB"
       );
+
+      e.target.value = "";
 
       return;
 
@@ -156,8 +156,6 @@ export default function ReviewForm({
 
 
 
-
-
   const inputStyle = {
 
     width: "100%",
@@ -166,69 +164,59 @@ export default function ReviewForm({
 
     borderRadius: "10px",
 
-    border: "1px solid #E8E1D9",
+    border:
+      "1px solid #E8E1D9",
 
     fontSize: "15px",
 
     fontFamily:
       "Inter, Segoe UI, Arial, sans-serif",
 
+    color: "#2D3436",
 
+    background: "#FFFFFF",
 
-    color: "#FFFFFF",
-    
-    caretColor: "#FFFFFF",
+    caretColor: "#2D3436",
 
     outline: "none",
 
-    boxSizing: "border-box" as const,
+    boxSizing:
+      "border-box" as const,
 
   };
 
 
 
-
-
   function RatingBox({
-
     title,
-
     value,
-
     setValue,
-
   }: {
-
     title: string;
-
     value: number;
-
-    setValue: (v: number) => void;
-
+    setValue: (
+      v: number
+    ) => void;
   }) {
-
 
     return (
 
       <div
-
         style={{
-
           flex: 1,
-
-          background: "#fafafa",
-
+          minWidth: "150px",
+          background: "#FAFAFA",
           padding: "15px",
-
           borderRadius: "12px",
-
           textAlign: "center",
-
         }}
-
       >
 
-        <strong>
+        <strong
+          style={{
+            color: "#2D3436",
+          }}
+        >
           {title}
         </strong>
 
@@ -237,29 +225,23 @@ export default function ReviewForm({
 
           value={value}
 
-          onChange={
-            (e) =>
-              setValue(
-                Number(
-                  e.target.value
-                )
+          onChange={(e) =>
+            setValue(
+              Number(
+                e.target.value
               )
+            )
           }
 
-
           style={{
-
             marginTop: "10px",
-
             width: "100%",
-
             padding: "8px",
-
             borderRadius: "8px",
-
             border:
               "1px solid #E8E1D9",
-
+            background: "white",
+            color: "#2D3436",
           }}
 
         >
@@ -276,12 +258,11 @@ export default function ReviewForm({
                     {"⭐".repeat(n)}
                   </option>
 
-                ))
-
+                )
+              )
           }
 
         </select>
-
 
       </div>
 
@@ -291,40 +272,30 @@ export default function ReviewForm({
 
 
 
-
-
   return (
 
     <form
 
       onSubmit={submit}
 
-
       style={{
-
         background: "white",
-
         borderRadius: "18px",
-
         padding: "30px",
-
         boxShadow:
           "0 6px 20px rgba(0,0,0,0.08)",
-
         maxWidth: "700px",
-
         marginBottom: "40px",
-
       }}
 
     >
 
 
-
-
       <p
         style={{
           color: "#777",
+          marginTop: 0,
+          marginBottom: "25px",
         }}
       >
         Share your dining experience
@@ -333,55 +304,47 @@ export default function ReviewForm({
 
 
 
+      {/* Restaurant status */}
+
+      {
+        !restaurantSelected && (
+
+          <div
+            style={{
+              background:
+                "#FFF3E8",
+              border:
+                "1px solid #FFD0A8",
+              color:
+                "#A85612",
+              padding:
+                "12px 15px",
+              borderRadius:
+                "10px",
+              marginBottom:
+                "20px",
+              fontSize:
+                "14px",
+            }}
+          >
+            🍽 Please search and select
+            a restaurant above before
+            submitting your review.
+          </div>
+
+        )
+      }
 
 
-      <label>
-        Restaurant ID
-      </label>
 
+      {/* Review Title */}
 
-      <input
-
-        type="number"
-
-        value={
-          restaurantId || ""
-        }
-
-
-        onChange={
-          (e) =>
-            setRestaurantId(
-              Number(
-                e.target.value
-              )
-            )
-        }
-
-
-        placeholder="Restaurant ID"
-
-        required
-
-
+      <label
         style={{
-          ...inputStyle,
-
-          marginTop: "8px",
-
-          marginBottom: "20px",
-
+          color: "#2D3436",
+          fontWeight: 600,
         }}
-
-      />
-
-
-
-
-
-
-
-      <label>
+      >
         Review Title
       </label>
 
@@ -390,162 +353,130 @@ export default function ReviewForm({
 
         value={title}
 
-        onChange={
-          (e) =>
-            setTitle(
-              e.target.value
-            )
+        onChange={(e) =>
+          setTitle(
+            e.target.value
+          )
         }
 
-
         placeholder=
-        "Give your review a title"
-
+          "Give your review a title"
 
         required
 
-
         style={{
-
           ...inputStyle,
-
           marginTop: "8px",
-
           marginBottom: "20px",
-
         }}
 
       />
 
 
 
+      {/* Review Body */}
 
-
-
-      <label>
+      <label
+        style={{
+          color: "#2D3436",
+          fontWeight: 600,
+        }}
+      >
         Your Experience
       </label>
 
 
       <textarea
 
-
         value={body}
 
-
-        onChange={
-          (e) =>
-            setBody(
-              e.target.value
-            )
+        onChange={(e) =>
+          setBody(
+            e.target.value
+          )
         }
 
-
         placeholder=
-        "Tell us about the food, service, and atmosphere..."
-
+          "Tell us about the food, service, and atmosphere..."
 
         rows={6}
 
+        required
 
         style={{
-
           ...inputStyle,
-
           marginTop: "8px",
-
           marginBottom: "25px",
-
-          //resize:"vertical",
-
+          resize: "vertical",
         }}
 
       />
 
 
 
+      {/* Ratings */}
 
-
-
-
-      <h3>
+      <h3
+        style={{
+          color: "#2D3436",
+        }}
+      >
         Ratings
       </h3>
 
 
       <div
-
         style={{
-
           display: "flex",
-
+          flexWrap: "wrap",
           gap: "15px",
-
           marginBottom: "25px",
-
         }}
-
       >
 
-
         <RatingBox
-
           title="Taste"
-
           value={taste}
-
           setValue={setTaste}
-
         />
 
 
         <RatingBox
-
           title="Value"
-
           value={value}
-
           setValue={setValue}
-
         />
 
 
         <RatingBox
-
           title="Ambiance"
-
           value={ambiance}
-
-          setValue={setAmbiance}
-
+          setValue={
+            setAmbiance
+          }
         />
-
 
       </div>
 
 
 
-
-
-
+      {/* Receipt */}
 
       <div
-
         style={{
-
-          background: "#fafafa",
-
+          background: "#FAFAFA",
           padding: "18px",
-
           borderRadius: "12px",
-
           marginBottom: "25px",
-
         }}
-
       >
 
-        <h3>
+        <h3
+          style={{
+            marginTop: 0,
+            color: "#2D3436",
+          }}
+        >
           📷 Receipt Verification
         </h3>
 
@@ -556,8 +487,9 @@ export default function ReviewForm({
             fontSize: "14px",
           }}
         >
-          Upload your receipt to improve
-          your Trust Score.
+          Upload your receipt to
+          improve your Trust Score.
+          Maximum file size is 5MB.
         </p>
 
 
@@ -565,41 +497,46 @@ export default function ReviewForm({
 
           type="file"
 
-          accept=".jpg,.jpeg,.png"
+          accept=
+            ".jpg,.jpeg,.png"
 
-          onChange={fileChange}
+          onChange={
+            fileChange
+          }
 
         />
 
 
         {
-          receipt &&
+          receipt && (
 
-          <p
-            style={{
-              color: "#2e7d32",
-            }}
-          >
-            ✓ {receipt.name}
-          </p>
+            <p
+              style={{
+                color: "#2E7D32",
+                fontSize: "14px",
+                marginBottom: 0,
+              }}
+            >
+              ✓ {receipt.name}
+            </p>
 
+          )
         }
-
 
       </div>
 
 
 
-
-
-
+      {/* Submit */}
 
       <button
 
         type="submit"
 
-        disabled={isLoading}
-
+        disabled={
+          isLoading ||
+          !restaurantSelected
+        }
 
         style={{
 
@@ -612,12 +549,10 @@ export default function ReviewForm({
           border: "none",
 
           background:
-            isLoading
-              ?
-              "#aaa"
-              :
-              "#ff7043",
-
+            isLoading ||
+            !restaurantSelected
+              ? "#AAA"
+              : "#FF7043",
 
           color: "white",
 
@@ -626,11 +561,10 @@ export default function ReviewForm({
           fontWeight: "bold",
 
           cursor:
-            isLoading
-              ?
-              "not-allowed"
-              :
-              "pointer",
+            isLoading ||
+            !restaurantSelected
+              ? "not-allowed"
+              : "pointer",
 
         }}
 
@@ -638,14 +572,13 @@ export default function ReviewForm({
 
         {
           isLoading
-            ?
-            "Submitting..."
-            :
-            "Submit Review"
+            ? "Submitting..."
+            : !restaurantSelected
+            ? "Select a Restaurant First"
+            : "Submit Review"
         }
 
       </button>
-
 
     </form>
 
