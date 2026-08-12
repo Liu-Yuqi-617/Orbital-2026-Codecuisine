@@ -178,7 +178,6 @@ export default function RestaurantDetail() {
           name: cachedName,
         }));
       }
-
     } catch (error) {
       console.error('Error fetching restaurant info from backend:', error);
     } finally {
