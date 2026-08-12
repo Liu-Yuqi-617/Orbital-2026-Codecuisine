@@ -4,7 +4,7 @@ import { useAuth } from "../context/AuthContext";
 
 
 export default function ProtectedRoute({
-  
+
 
   children,
 
@@ -31,6 +31,8 @@ export default function ProtectedRoute({
   return children;
 
 }
+
+
 /*
 
 export default function ProtectedRoute({ children }: any) {

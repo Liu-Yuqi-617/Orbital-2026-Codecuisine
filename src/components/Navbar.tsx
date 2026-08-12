@@ -1,11 +1,8 @@
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
-
 export default function Navbar() {
-
     const location = useLocation();
-
     const { user, logout } = useAuth();
 
     const navItems = [
@@ -22,20 +19,21 @@ export default function Navbar() {
             path: "/search"
         },
         {
-            name: "Profile",
-            path: "/profile"
-        },
-        {
+
             name: "Wishlist",
             path: "/wishlist"
+        },
+        {
+            name: "Profile",
+            path: "/profile"
+
         }
     ];
 
     return (
-
         <nav
-
             style={{
+
 
                 background: "#FFFFFF",
 
@@ -57,17 +55,12 @@ export default function Navbar() {
                 zIndex: 100,
 
             }}
-
         >
-
-
             {/* Logo */}
-
             <Link
-
                 to="/"
-
                 style={{
+
 
                     textDecoration: "none",
 
@@ -77,30 +70,23 @@ export default function Navbar() {
 
                     color: "#E67E22",
 
+
                 }}
-
             >
-
                 🍽 FoodTrust
-
             </Link>
 
-
-
-
-
             {/* Navigation */}
-
             <div
-
                 style={{
+
 
                     display: "flex",
 
                     gap: "10px",
 
-                }}
 
+                }}
             >
 
                 {
@@ -162,12 +148,7 @@ export default function Navbar() {
 
             </div>
 
-
-
-
-
             {/* User */}
-
             <div>
 
                 {
@@ -227,11 +208,6 @@ export default function Navbar() {
                 }
 
             </div>
-
-
-
         </nav>
-
     );
-
 }
