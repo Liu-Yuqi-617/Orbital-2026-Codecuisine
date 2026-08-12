@@ -300,6 +300,20 @@ export default function Reviews() {
       const restaurantId =
         selectedRestaurant.id;
 
+      localStorage.setItem(
+        `restaurant_name_${restaurantId}`,
+        selectedRestaurant.name
+      );
+
+      localStorage.setItem(
+        `restaurant_info_${restaurantId}`,
+        JSON.stringify({
+          ...selectedRestaurant,
+          place_id:
+            selectedRestaurant.place_id ||
+            String(restaurantId),
+        })
+      );
 
       const createData:
         CreateReviewRequest = {
@@ -539,7 +553,7 @@ export default function Reviews() {
 
                   <input
                     placeholder=
-                      "Search restaurant by name..."
+                    "Search restaurant by name..."
 
                     value={
                       searchQuery
@@ -559,7 +573,7 @@ export default function Reviews() {
                       if (
                         selectedRestaurant &&
                         value !==
-                          selectedRestaurant.name
+                        selectedRestaurant.name
                       ) {
 
                         setSelectedRestaurant(
@@ -601,7 +615,7 @@ export default function Reviews() {
 
                       if (
                         searchResults.length >
-                          0
+                        0
                       ) {
 
                         setShowSearchResults(
@@ -724,82 +738,139 @@ export default function Reviews() {
                           :
 
                           searchResults.length ===
-                          0
+                            0
 
-                          ? (
-
-                            <div
-                              style={{
-                                padding:
-                                  "20px",
-                                textAlign:
-                                  "center",
-                                color:
-                                  "#777",
-                              }}
-                            >
-                              No restaurants found.
-                            </div>
-
-                          )
-
-                          :
-
-                          searchResults.map(
-                            (
-                              restaurant
-                            ) => (
+                            ? (
 
                               <div
-                                key={
-                                  restaurant.id
-                                }
-
-                                onClick={() =>
-                                  handleSelectRestaurant(
-                                    restaurant
-                                  )
-                                }
-
                                 style={{
                                   padding:
-                                    "14px 16px",
-                                  cursor:
-                                    "pointer",
-                                  borderBottom:
-                                    "1px solid #F0F0F0",
-                                  display:
-                                    "flex",
-                                  justifyContent:
-                                    "space-between",
-                                  alignItems:
+                                    "20px",
+                                  textAlign:
                                     "center",
-                                  gap:
-                                    "15px",
-                                  background:
-                                    "white",
+                                  color:
+                                    "#777",
                                 }}
                               >
+                                No restaurants found.
+                              </div>
+
+                            )
+
+                            :
+
+                            searchResults.map(
+                              (
+                                restaurant
+                              ) => (
 
                                 <div
+                                  key={
+                                    restaurant.id
+                                  }
+
+                                  onClick={() =>
+                                    handleSelectRestaurant(
+                                      restaurant
+                                    )
+                                  }
+
                                   style={{
-                                    flex: 1,
+                                    padding:
+                                      "14px 16px",
+                                    cursor:
+                                      "pointer",
+                                    borderBottom:
+                                      "1px solid #F0F0F0",
+                                    display:
+                                      "flex",
+                                    justifyContent:
+                                      "space-between",
+                                    alignItems:
+                                      "center",
+                                    gap:
+                                      "15px",
+                                    background:
+                                      "white",
                                   }}
                                 >
 
                                   <div
                                     style={{
-                                      fontWeight:
-                                        700,
-                                      color:
-                                        "#2D3436",
-                                      marginBottom:
-                                        "5px",
+                                      flex: 1,
                                     }}
                                   >
-                                    {
-                                      restaurant.name
-                                    }
+
+                                    <div
+                                      style={{
+                                        fontWeight:
+                                          700,
+                                        color:
+                                          "#2D3436",
+                                        marginBottom:
+                                          "5px",
+                                      }}
+                                    >
+                                      {
+                                        restaurant.name
+                                      }
+                                    </div>
+
+
+                                    <div
+                                      style={{
+                                        fontSize:
+                                          "13px",
+                                        color:
+                                          "#777",
+                                        lineHeight:
+                                          "1.5",
+                                      }}
+                                    >
+
+                                      ID: {
+                                        restaurant.id
+                                      }
+
+
+                                      {
+                                        restaurant.address && (
+
+                                          <span>
+                                            {" · "}
+                                            📍 {
+                                              restaurant.address
+                                            }
+                                          </span>
+
+                                        )
+                                      }
+
+
+                                      {
+                                        restaurant.cuisine_type &&
+                                        restaurant.cuisine_type !==
+                                        "unknown" && (
+
+                                          <span>
+
+                                            {" · "}🍽{" "}
+
+                                            {
+                                              restaurant.cuisine_type
+                                                .charAt(0)
+                                                .toUpperCase() +
+                                              restaurant.cuisine_type
+                                                .slice(1)
+                                            }
+
+                                          </span>
+
+                                        )
+                                      }
+
+                                    </div>
+
                                   </div>
 
 
@@ -808,49 +879,44 @@ export default function Reviews() {
                                       fontSize:
                                         "13px",
                                       color:
-                                        "#777",
-                                      lineHeight:
-                                        "1.5",
+                                        "#555",
+                                      textAlign:
+                                        "right",
                                     }}
                                   >
 
-                                    ID: {
-                                      restaurant.id
-                                    }
-
-
                                     {
-                                      restaurant.address && (
+                                      restaurant.composite_score >
+                                      0 && (
 
-                                        <span>
-                                          {" · "}
-                                          📍 {
-                                            restaurant.address
+                                        <div>
+                                          ⭐{" "}
+                                          {
+                                            restaurant.composite_score.toFixed(
+                                              1
+                                            )
                                           }
-                                        </span>
+                                        </div>
 
                                       )
                                     }
 
 
                                     {
-                                      restaurant.cuisine_type &&
-                                      restaurant.cuisine_type !==
-                                        "unknown" && (
+                                      restaurant.price_level >
+                                      0 && (
 
-                                        <span>
-
-                                          {" · "}🍽{" "}
-
+                                        <div>
+                                          💰{" "}
                                           {
-                                            restaurant.cuisine_type
-                                              .charAt(0)
-                                              .toUpperCase() +
-                                            restaurant.cuisine_type
-                                              .slice(1)
+                                            "$".repeat(
+                                              Math.min(
+                                                restaurant.price_level,
+                                                4
+                                              )
+                                            )
                                           }
-
-                                        </span>
+                                        </div>
 
                                       )
                                     }
@@ -859,60 +925,8 @@ export default function Reviews() {
 
                                 </div>
 
-
-                                <div
-                                  style={{
-                                    fontSize:
-                                      "13px",
-                                    color:
-                                      "#555",
-                                    textAlign:
-                                      "right",
-                                  }}
-                                >
-
-                                  {
-                                    restaurant.composite_score >
-                                      0 && (
-
-                                      <div>
-                                        ⭐{" "}
-                                        {
-                                          restaurant.composite_score.toFixed(
-                                            1
-                                          )
-                                        }
-                                      </div>
-
-                                    )
-                                  }
-
-
-                                  {
-                                    restaurant.price_level >
-                                      0 && (
-
-                                      <div>
-                                        💰{" "}
-                                        {
-                                          "$".repeat(
-                                            Math.min(
-                                              restaurant.price_level,
-                                              4
-                                            )
-                                          )
-                                        }
-                                      </div>
-
-                                    )
-                                  }
-
-                                </div>
-
-                              </div>
-
+                              )
                             )
-                          )
                       }
 
                     </div>

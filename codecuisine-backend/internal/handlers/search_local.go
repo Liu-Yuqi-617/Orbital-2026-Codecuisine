@@ -17,7 +17,6 @@ func NewSearchLocalHandler(syncService *service.RestaurantSyncService) *SearchLo
 	return &SearchLocalHandler{syncService: syncService}
 }
 
-// SearchLocal 从本地数据库搜索（不调用API，速度快）
 func (h *SearchLocalHandler) SearchLocal(c *gin.Context) {
 	var req dto.SearchRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
@@ -25,7 +24,6 @@ func (h *SearchLocalHandler) SearchLocal(c *gin.Context) {
 		return
 	}
 
-	// 默认值
 	if req.Radius == 0 {
 		req.Radius = 5000
 	}

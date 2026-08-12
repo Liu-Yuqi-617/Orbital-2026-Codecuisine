@@ -299,7 +299,19 @@ function Search() {
                 {restaurants.map((r) => (
                     <div
                         key={r.id}
-                        onClick={() => navigate(`/restaurant/${r.place_id || r.id}`)}
+                        onClick={() => {
+                            localStorage.setItem(
+                                `restaurant_name_${r.id}`,
+                                r.name
+                            );
+
+                            localStorage.setItem(
+                                `restaurant_info_${r.id}`,
+                                JSON.stringify(r)
+                            );
+
+                            navigate(`/restaurant/${r.id}`);
+                        }}
                         style={{
                             background: "white",
 

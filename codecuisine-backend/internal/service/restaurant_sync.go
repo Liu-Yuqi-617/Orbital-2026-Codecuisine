@@ -113,19 +113,20 @@ func (s *RestaurantSyncService) upsertRestaurant(place RestaurantResult) {
 			Address:     place.Address,
 			Latitude:    place.Lat,
 			Longitude:   place.Lng,
-			CuisineType: "unknown", // Will be inferred later via type inference
+			CuisineType: utils.InferCuisineType(place.Types),
 			PriceRange:  place.PriceLevel,
 			PhotoURL:    place.PhotoURL,
 		}
 		s.db.Create(&restaurant)
 	} else if err == nil {
 		s.db.Model(&restaurant).Updates(map[string]interface{}{
-			"name":        place.Name,
-			"address":     place.Address,
-			"latitude":    place.Lat,
-			"longitude":   place.Lng,
-			"price_range": place.PriceLevel,
-			"photo_url":   place.PhotoURL,
+			"name":         place.Name,
+			"address":      place.Address,
+			"latitude":     place.Lat,
+			"longitude":    place.Lng,
+			"price_range":  place.PriceLevel,
+			"photo_url":    place.PhotoURL,
+			"cuisine_type": utils.InferCuisineType(place.Types),
 		})
 	}
 }

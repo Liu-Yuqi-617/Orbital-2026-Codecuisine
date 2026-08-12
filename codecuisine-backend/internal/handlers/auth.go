@@ -139,9 +139,10 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		"code":    200,
 		"message": "Login successfully",
 		"data": dto.AuthResponse{
-			Token:    token,
-			Username: user.Username,
-			Email:    user.Email,
+			Token:      token,
+			Username:   user.Username,
+			Email:      user.Email,
+			TrustScore: user.TrustScore,
 		},
 	})
 }

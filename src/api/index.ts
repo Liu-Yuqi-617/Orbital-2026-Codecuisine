@@ -130,4 +130,8 @@ export const getRestaurantByPlaceId = (placeId: string) => {
   return api.get(`/restaurants/place/${placeId}`);
 };
 
+export const getRestaurantById = (id: string) => {
+  return api.get(`/restaurants/${id}`);
+};
+
 export default api;

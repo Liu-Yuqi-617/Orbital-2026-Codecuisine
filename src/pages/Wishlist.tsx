@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import Navbar from "../components/Navbar";
-import { getWishlist, addToWishlist, removeFromWishlist, searchRestaurants, getRestaurantByPlaceId } from "../api";
+import { getWishlist, addToWishlist, removeFromWishlist, searchRestaurants, getRestaurantByPlaceId, getRestaurantById } from "../api";
 import { useNavigate } from "react-router-dom";
 import type { SimpleRestaurant } from "../types";
 
@@ -88,9 +88,11 @@ export default function Wishlist() {
           }
 
           try {
-            const restaurantRes = await getRestaurantByPlaceId(
-              item.restaurantId
-            );
+            const isDatabaseId = /^\d+$/.test(item.restaurantId);
+
+            const restaurantRes = isDatabaseId
+              ? await getRestaurantById(item.restaurantId)
+              : await getRestaurantByPlaceId(item.restaurantId);
 
             const restaurant = restaurantRes.data?.data || null;
 
@@ -345,7 +347,6 @@ export default function Wishlist() {
 
         </div>
 
-
         {/* Add Form */}
         <form
           onSubmit={handleAdd}
@@ -469,7 +470,7 @@ export default function Wishlist() {
 
                 boxShadow: "0 8px 25px rgba(0,0,0,0.15)",
 
-                width: "100%",
+                width: "60%",
 
               }}>
                 {isSearching ? (

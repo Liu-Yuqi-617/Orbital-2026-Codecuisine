@@ -122,12 +122,13 @@ func (s *SearchService) syncPlacesToDB(places []RestaurantResult) []models.Resta
 		} else {
 			// Update basic info (optional)
 			s.db.Model(&restaurant).Updates(map[string]interface{}{
-				"name":        place.Name,
-				"address":     place.Address,
-				"lat":         place.Lat,
-				"lng":         place.Lng,
-				"photo_url":   place.PhotoURL,
-				"price_range": place.PriceLevel,
+				"name":         place.Name,
+				"address":      place.Address,
+				"lat":          place.Lat,
+				"lng":          place.Lng,
+				"photo_url":    place.PhotoURL,
+				"price_range":  place.PriceLevel,
+				"cuisine_type": utils.InferCuisineType(place.Types),
 			})
 		}
 

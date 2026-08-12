@@ -20,9 +20,10 @@ type LoginRequest struct {
 
 // Authentication Response
 type AuthResponse struct {
-	Token    string `json:"token"`
-	Username string `json:"username"`
-	Email    string `json:"email"`
+	Token      string  `json:"token"`
+	Username   string  `json:"username"`
+	Email      string  `json:"email"`
+	TrustScore float64 `json:"trustScore"`
 }
 
 // User Information Response

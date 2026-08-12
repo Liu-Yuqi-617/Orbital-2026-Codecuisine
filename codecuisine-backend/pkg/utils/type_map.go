@@ -168,15 +168,16 @@ var cuisineMapping = map[string]string{
 
 // InferCuisineType infers the cuisine for a single place (reuses cuisineMapping)
 func InferCuisineType(placeTypes []string) string {
+	// Try to identify a specific cuisine first
 	for _, t := range placeTypes {
 		if cuisine, ok := cuisineMapping[t]; ok {
 			return cuisine
 		}
 	}
+
+	// Handle general food-related types
 	for _, t := range placeTypes {
 		switch t {
-		case "restaurant":
-			continue
 		case "cafe":
 			return "cafe"
 		case "bakery":
@@ -189,6 +190,15 @@ func InferCuisineType(placeTypes []string) string {
 			return "nightlife"
 		}
 	}
+
+	// If Google confirms it is a restaurant
+	// but does not provide a specific cuisine
+	for _, t := range placeTypes {
+		if t == "restaurant" {
+			return "other"
+		}
+	}
+
 	return "unknown"
 }
 
@@ -202,6 +212,11 @@ func GetAllCuisineTypes() []string {
 			seen[cuisine] = struct{}{}
 			result = append(result, cuisine)
 		}
+	}
+
+	// Add fallback cuisine type
+	if _, ok := seen["other"]; !ok {
+		result = append(result, "other")
 	}
 
 	sort.Strings(result)
