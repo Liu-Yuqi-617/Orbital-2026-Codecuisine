@@ -249,14 +249,11 @@ export default function RestaurantDetail() {
         });
 
         setRestaurantName(cachedName);
-
-        localStorage.setItem(
-          `restaurant_info_${restaurantId}`,
-          JSON.stringify({
-            place_id: fallbackPlaceId,
-            name: cachedName,
-          })
-        );
+        localStorage.setItem(`restaurant_info_${restaurantId}`, JSON.stringify({
+          place_id: fallbackPlaceId,
+          name: cachedName,
+        }));
+        
       }
     } catch (error) {
       console.error(
