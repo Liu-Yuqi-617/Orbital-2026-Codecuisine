@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import Navbar from "../components/Navbar";
-import { getWishlist, addToWishlist, removeFromWishlist, searchRestaurants } from "../api";
+import { getWishlist, addToWishlist, removeFromWishlist, searchRestaurants, getRestaurantByPlaceId } from "../api";
 import { useNavigate } from "react-router-dom";
 import type { SimpleRestaurant } from "../types";
 
@@ -48,61 +48,101 @@ export default function Wishlist() {
   async function loadWishlist() {
     try {
       setLoading(true);
+
       const res = await getWishlist();
-      const wishlistItems = res.data || [];
+
+      console.log("wishlist response:", res.data);
+
+      const rawItems = res.data || [];
+
+      const wishlistItems: WishlistItem[] = rawItems.map((item: any) => ({
+        id: item.id ?? item.ID,
+        userId: item.userId ?? item.UserID,
+        restaurantId: item.restaurantId ?? item.RestaurantID,
+        notes: item.notes ?? item.Notes ?? "",
+        tags: item.tags ?? item.Tags ?? "",
+        createdAt: item.createdAt ?? item.CreatedAt,
+      }));
 
       const itemsWithDetails = await Promise.all(
         wishlistItems.map(async (item: WishlistItem) => {
-          // 首先检查缓存
-          const cachedData = localStorage.getItem(`restaurant_data_${item.restaurantId}`);
+
+          const cachedData = localStorage.getItem(
+            `restaurant_data_${item.restaurantId}`
+          );
 
           if (cachedData) {
             try {
               const restaurant = JSON.parse(cachedData);
+
               return {
                 ...item,
                 restaurantDetails: restaurant,
-                displayName: restaurant.name || `Restaurant #${item.restaurantId}`,
+                displayName:
+                  restaurant.name ||
+                  `Restaurant #${item.restaurantId}`,
               };
             } catch (e) {
-
+              console.error("Failed to parse cached restaurant:", e);
             }
           }
 
           try {
-            const searchRes = await searchRestaurants({
-              query: item.restaurantId,
-              lat: 1.3521,
-              lng: 103.8198,
-              radius: 50000,
-              page: 1,
-              page_size: 1,
-            });
+            const restaurantRes = await getRestaurantByPlaceId(
+              item.restaurantId
+            );
 
-            const restaurant = searchRes.data.restaurants?.[0] || null;
+            const restaurant = restaurantRes.data?.data || null;
+
+            console.log(
+              "restaurant details:",
+              item.restaurantId,
+              restaurant
+            );
 
             if (restaurant) {
-              localStorage.setItem(`restaurant_name_${item.restaurantId}`, restaurant.name);
-              localStorage.setItem(`restaurant_data_${item.restaurantId}`, JSON.stringify(restaurant));
+              localStorage.setItem(
+                `restaurant_name_${item.restaurantId}`,
+                restaurant.name
+              );
+
+              localStorage.setItem(
+                `restaurant_data_${item.restaurantId}`,
+                JSON.stringify(restaurant)
+              );
             }
 
             return {
               ...item,
               restaurantDetails: restaurant,
-              displayName: restaurant?.name || `Restaurant #${item.restaurantId}`,
+              displayName:
+                restaurant?.name ||
+                `Restaurant #${item.restaurantId}`,
             };
+
           } catch (err) {
-            console.error(`Failed to fetch details for ${item.restaurantId}:`, err);
+            console.error(
+              `Failed to fetch restaurant ${item.restaurantId}:`,
+              err
+            );
+
+            const cachedName = localStorage.getItem(
+              `restaurant_name_${item.restaurantId}`
+            );
+
             return {
               ...item,
               restaurantDetails: null,
-              displayName: `Restaurant #${item.restaurantId}`,
+              displayName:
+                cachedName ||
+                `Restaurant #${item.restaurantId}`,
             };
           }
         })
       );
 
       setItems(itemsWithDetails);
+
     } catch (err) {
       console.error("Failed to load wishlist:", err);
       alert("Failed to load wishlist. Please try again.");
