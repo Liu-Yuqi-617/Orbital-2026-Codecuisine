@@ -19,6 +19,7 @@ function FilterPanel({
     setPriceLevel: (value: number) => void;
     cuisines: string[];
 }) {
+
     return (
         <div style={{ display: "flex", gap: "20px", alignItems: "center" }}>
 
@@ -38,10 +39,10 @@ function FilterPanel({
                 Minimum Rating:
                 <input
                     type="number"
-                    min="1"
+                    min="0"
                     max="5"
                     step="0.5"
-                    style={{ marginLeft: "5px", width: "30px" }}
+                    style={{ marginLeft: "5px", width: "50px" }}
                     value={minRating}
                     onChange={(e) =>
                         setMinRating(Number(e.target.value))
@@ -54,7 +55,7 @@ function FilterPanel({
                 <select
                     value={cuisine}
                     onChange={(e) => setCuisine(e.target.value)}
-                    style={{ padding: "4px 8px" }}
+                    style={{ padding: "4px 8px", marginLeft: "5px", width: "150px" }}
                 >
                     <option value="">All Cuisines</option>
                     {(Array.isArray(cuisines) ? cuisines : []).map((c) => (
@@ -70,7 +71,7 @@ function FilterPanel({
                 <select
                     value={priceLevel}
                     onChange={(e) => setPriceLevel(parseInt(e.target.value))}
-                    style={{ padding: "4px 8px" }}
+                    style={{ padding: "4px 8px", marginLeft: "5px" }}
                 >
                     <option value={0}>Any</option>
                     <option value={1}>$</option>

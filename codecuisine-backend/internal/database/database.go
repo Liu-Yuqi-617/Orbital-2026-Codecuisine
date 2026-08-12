@@ -39,5 +39,13 @@ func Connect(dsn string) (*gorm.DB, error) {
 		return nil, fmt.Errorf("migrate Verification failed: %w", err)
 	}
 
+	if err := db.AutoMigrate(&models.Wishlist{}); err != nil {
+		return nil, fmt.Errorf("migrate Wishlist failed: %w", err)
+	}
+
+	if err := db.AutoMigrate(&models.SearchCache{}); err != nil {
+		return nil, fmt.Errorf("migrate SearchCache failed: %w", err)
+	}
+
 	return db, nil
 }

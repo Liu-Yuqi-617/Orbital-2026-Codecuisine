@@ -12,9 +12,7 @@ import type {
   GPSCheckinRequest,
 } from '../types';
 
-
 const API_BASE_URL = '/backend-api';
-
 
 const api = axios.create({
   baseURL: API_BASE_URL,

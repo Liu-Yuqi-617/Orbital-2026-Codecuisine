@@ -29,7 +29,7 @@ func NewSearchService(db *gorm.DB, apiKey string) *SearchService {
 	return &SearchService{
 		db:           db,
 		placesClient: NewGooglePlacesClient(apiKey),
-		cacheTTL:     30 * time.Minute,
+		cacheTTL:     15 * time.Minute,
 	}
 }
 
@@ -78,6 +78,10 @@ func (s *SearchService) Search(ctx context.Context, req dto.SearchRequest) (*dto
 	return s.paginateResults(sorted, req.Page, req.PageSize, req), nil
 }
 
+func (s *SearchService) FetchPlaceDetails(ctx context.Context, placeID string) (*RestaurantResult, error) {
+	return s.placesClient.GetPlaceDetails(ctx, placeID)
+}
+
 // syncPlacesToDB syncs Google Places data to local DB, or returns existing data
 func (s *SearchService) syncPlacesToDB(places []RestaurantResult) []models.Restaurant {
 	var results []models.Restaurant
@@ -102,14 +106,28 @@ func (s *SearchService) syncPlacesToDB(places []RestaurantResult) []models.Resta
 				PhotoURL:    place.PhotoURL,
 			}
 			s.db.Create(&restaurant)
+
+			go func(pid string, rid uint) {
+				ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+				defer cancel()
+
+				details, err := s.placesClient.GetPlaceDetails(ctx, pid)
+				if err == nil && details != nil {
+					s.db.Model(&models.Restaurant{}).Where("id = ?", rid).Updates(map[string]interface{}{
+						"phone":       details.Phone,
+						"price_range": details.PriceLevel,
+					})
+				}
+			}(place.PlaceID, restaurant.ID)
 		} else {
 			// Update basic info (optional)
 			s.db.Model(&restaurant).Updates(map[string]interface{}{
-				"name":      place.Name,
-				"address":   place.Address,
-				"lat":       place.Lat,
-				"lng":       place.Lng,
-				"photo_url": place.PhotoURL,
+				"name":        place.Name,
+				"address":     place.Address,
+				"lat":         place.Lat,
+				"lng":         place.Lng,
+				"photo_url":   place.PhotoURL,
+				"price_range": place.PriceLevel,
 			})
 		}
 
@@ -499,4 +517,109 @@ func (s *SearchService) calculateTrustScore(stats struct {
 
 	// Cap at 100
 	return int(math.Min(score, 100.0))
+}
+
+// GetRestaurantByPlaceID retrieves restaurant by place_id from DB or Google Places API
+func (s *SearchService) GetRestaurantByPlaceID(ctx context.Context, placeID string) (*dto.RestaurantDetailResponse, error) {
+	var restaurant models.Restaurant
+
+	// First, try to find in local database
+	err := s.db.Where("place_id = ?", placeID).First(&restaurant).Error
+
+	if err == gorm.ErrRecordNotFound {
+		// Not found in DB, fetch from Google Places
+		place, err := s.placesClient.GetPlaceDetails(ctx, placeID)
+		if err != nil {
+			return nil, fmt.Errorf("failed to fetch place from Google Places: %w", err)
+		}
+
+		// Create new restaurant record
+		restaurant = models.Restaurant{
+			PlaceID:     place.PlaceID,
+			Name:        place.Name,
+			Address:     place.Address,
+			Latitude:    place.Lat,
+			Longitude:   place.Lng,
+			CuisineType: utils.InferCuisineType(place.Types),
+			PriceRange:  place.PriceLevel,
+			Phone:       place.Phone,
+			PhotoURL:    place.PhotoURL,
+		}
+
+		if err := s.db.Create(&restaurant).Error; err != nil {
+			return nil, fmt.Errorf("failed to save restaurant to database: %w", err)
+		}
+
+		// Recalculate scores (will be zero initially)
+		s.recalculateScores(restaurant.ID)
+
+		// Reload with updated scores
+		s.db.First(&restaurant, restaurant.ID)
+
+	} else if err != nil {
+		return nil, fmt.Errorf("database error: %w", err)
+	}
+
+	// Build detailed response
+	return s.buildRestaurantDetailResponse(&restaurant), nil
+}
+
+// GetRestaurantByID retrieves restaurant by local ID from database
+func (s *SearchService) GetRestaurantByID(ctx context.Context, id uint) (*dto.RestaurantDetailResponse, error) {
+	var restaurant models.Restaurant
+
+	err := s.db.Where("id = ?", id).First(&restaurant).Error
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, fmt.Errorf("restaurant with id %d not found", id)
+		}
+		return nil, fmt.Errorf("database error: %w", err)
+	}
+
+	return s.buildRestaurantDetailResponse(&restaurant), nil
+}
+
+// buildRestaurantDetailResponse builds a detailed response for a single restaurant
+func (s *SearchService) buildRestaurantDetailResponse(restaurant *models.Restaurant) *dto.RestaurantDetailResponse {
+	// Fetch reviews for this restaurant
+	var reviews []models.Review
+	s.db.Preload("User").Where("restaurant_id = ?", restaurant.ID).Order("created_at DESC").Find(&reviews)
+
+	// Convert reviews to DTOs
+	var reviewDTOs []dto.ReviewResponse
+	for _, r := range reviews {
+		reviewDTOs = append(reviewDTOs, dto.ReviewResponse{
+			ID:             r.ID,
+			UserID:         r.UserID,
+			Username:       r.User.Username,
+			TasteRating:    r.TasteRating,
+			ValueRating:    r.ValueRating,
+			AmbianceRating: r.AmbianceRating,
+			Title:          r.Title,
+			Body:           r.Body,
+			IsVerified:     r.IsVerified,
+			CreatedAt:      r.CreatedAt,
+		})
+	}
+
+	return &dto.RestaurantDetailResponse{
+		ID:                  restaurant.ID,
+		PlaceID:             restaurant.PlaceID,
+		Name:                restaurant.Name,
+		Address:             restaurant.Address,
+		Lat:                 restaurant.Latitude,
+		Lng:                 restaurant.Longitude,
+		CuisineType:         restaurant.CuisineType,
+		PriceLevel:          restaurant.PriceRange,
+		Phone:               restaurant.Phone,
+		PhotoURL:            restaurant.PhotoURL,
+		AvgTaste:            math.Round(restaurant.AvgTaste*10) / 10,
+		AvgValue:            math.Round(restaurant.AvgValue*10) / 10,
+		AvgAmbiance:         math.Round(restaurant.AvgAmbiance*10) / 10,
+		CompositeScore:      math.Round(restaurant.CompositeScore*10) / 10,
+		TrustWeightedScore:  math.Round(restaurant.TrustWeightedScore*10) / 10,
+		TotalReviewCount:    int64(restaurant.TotalReviewCount),
+		VerifiedReviewCount: int64(restaurant.VerifiedReviewCount),
+		Reviews:             reviewDTOs,
+	}
 }

@@ -28,34 +28,27 @@ export default function ReviewForm({
   restaurantSelected,
 }: ReviewFormProps) {
 
-
   const [title, setTitle] =
     useState("");
-
 
   const [body, setBody] =
     useState("");
 
-
   const [taste, setTaste] =
     useState(5);
-
 
   const [value, setValue] =
     useState(5);
 
-
   const [ambiance, setAmbiance] =
     useState(5);
-
 
   const [receipt, setReceipt] =
     useState<File | null>(null);
 
 
-
   async function submit(
-    e: React.FormEvent
+    e: React.FormEvent<HTMLFormElement>
   ) {
 
     e.preventDefault();
@@ -75,24 +68,17 @@ export default function ReviewForm({
     try {
 
       await addReview({
-
         title,
-
         body,
-
         taste,
-
         value,
-
         ambiance,
-
         receipt:
           receipt || undefined,
-
       });
 
 
-      // Reset form after submit
+      // Reset form after successful submit
 
       setTitle("");
 
@@ -118,7 +104,6 @@ export default function ReviewForm({
     }
 
   }
-
 
 
   function fileChange(
@@ -155,7 +140,6 @@ export default function ReviewForm({
   }
 
 
-
   const inputStyle = {
 
     width: "100%",
@@ -184,7 +168,6 @@ export default function ReviewForm({
       "border-box" as const,
 
   };
-
 
 
   function RatingBox({
@@ -222,7 +205,6 @@ export default function ReviewForm({
 
 
         <select
-
           value={value}
 
           onChange={(e) =>
@@ -243,23 +225,21 @@ export default function ReviewForm({
             background: "white",
             color: "#2D3436",
           }}
-
         >
 
           {
-            [1, 2, 3, 4, 5]
-              .map(
-                (n) => (
+            [1, 2, 3, 4, 5].map(
+              (n) => (
 
-                  <option
-                    key={n}
-                    value={n}
-                  >
-                    {"⭐".repeat(n)}
-                  </option>
+                <option
+                  key={n}
+                  value={n}
+                >
+                  {"⭐".repeat(n)}
+                </option>
 
-                )
               )
+            )
           }
 
         </select>
@@ -271,11 +251,9 @@ export default function ReviewForm({
   }
 
 
-
   return (
 
     <form
-
       onSubmit={submit}
 
       style={{
@@ -287,7 +265,6 @@ export default function ReviewForm({
         maxWidth: "700px",
         marginBottom: "40px",
       }}
-
     >
 
 
@@ -301,7 +278,6 @@ export default function ReviewForm({
         Share your dining experience
         with other customers.
       </p>
-
 
 
       {/* Restaurant status */}
@@ -336,7 +312,6 @@ export default function ReviewForm({
       }
 
 
-
       {/* Review Title */}
 
       <label
@@ -350,7 +325,6 @@ export default function ReviewForm({
 
 
       <input
-
         value={title}
 
         onChange={(e) =>
@@ -369,9 +343,7 @@ export default function ReviewForm({
           marginTop: "8px",
           marginBottom: "20px",
         }}
-
       />
-
 
 
       {/* Review Body */}
@@ -387,7 +359,6 @@ export default function ReviewForm({
 
 
       <textarea
-
         value={body}
 
         onChange={(e) =>
@@ -409,9 +380,7 @@ export default function ReviewForm({
           marginBottom: "25px",
           resize: "vertical",
         }}
-
       />
-
 
 
       {/* Ratings */}
@@ -451,13 +420,10 @@ export default function ReviewForm({
         <RatingBox
           title="Ambiance"
           value={ambiance}
-          setValue={
-            setAmbiance
-          }
+          setValue={setAmbiance}
         />
 
       </div>
-
 
 
       {/* Receipt */}
@@ -494,7 +460,6 @@ export default function ReviewForm({
 
 
         <input
-
           type="file"
 
           accept=
@@ -503,7 +468,6 @@ export default function ReviewForm({
           onChange={
             fileChange
           }
-
         />
 
 
@@ -526,11 +490,9 @@ export default function ReviewForm({
       </div>
 
 
-
       {/* Submit */}
 
       <button
-
         type="submit"
 
         disabled={
@@ -539,13 +501,9 @@ export default function ReviewForm({
         }
 
         style={{
-
           width: "100%",
-
           padding: "14px",
-
           borderRadius: "12px",
-
           border: "none",
 
           background:
@@ -565,9 +523,7 @@ export default function ReviewForm({
             !restaurantSelected
               ? "not-allowed"
               : "pointer",
-
         }}
-
       >
 
         {

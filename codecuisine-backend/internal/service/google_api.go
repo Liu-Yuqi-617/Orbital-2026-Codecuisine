@@ -145,7 +145,10 @@ func (c *GooglePlacesClient) GetPlaceDetails(ctx context.Context, placeID string
 		Status string `json:"status"`
 	}
 
-	json.NewDecoder(resp.Body).Decode(&result)
+	// Add error check for json.Decode
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return nil, fmt.Errorf("failed to decode place details response: %w", err)
+	}
 
 	if result.Status != "OK" {
 		return nil, fmt.Errorf("place details error: %s", result.Status)

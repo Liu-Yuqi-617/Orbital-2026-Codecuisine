@@ -112,9 +112,6 @@ export default function Profile() {
 
     const username = (user as User | null)?.username ?? "";
     const email = (user as User | null)?.email ?? "";
-    const joinedDate = (user as User | null)?.createdAt
-        ? new Date((user as User).createdAt).toLocaleDateString()
-        : "N/A";
 
     return (
         <>
@@ -236,19 +233,11 @@ export default function Profile() {
                                 {trustLevel.label}
                             </div>
 
-                            <p
-
-                                style={{
-
-                                    color: "#636E72",
-
-                                    fontSize: "15px"
-
-                                }}
-
-                            >
-                                <p className="joined-text">Joined: {joinedDate}</p>
+                            <p style={{ color: "#2D3436", fontSize: "18px", margin: "8px 0" }}>
+                                📧 <span style={{ color: "#636E72" }}>{email}</span>
                             </p>
+
+
                         </div>
 
                         <div style={{

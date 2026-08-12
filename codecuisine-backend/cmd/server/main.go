@@ -44,9 +44,14 @@ func main() {
 	}
 
 	searchService := service.NewSearchService(db, apiKey)
+	syncService := service.NewRestaurantSyncService(db, apiKey)
+	syncService.StartBackgroundSync()
 
 	// start cache cleanup (once an hour automatically)
 	go service.StartCacheCleanup(searchService)
+
+	// start GPS privacy cleanup (clears GPS coordinates after check-in)
+	go service.StartGPSCleanup(db)
 
 	// all api routes start with /api
 	api := r.Group("/api")
@@ -64,7 +69,9 @@ func main() {
 		authHandler := handlers.NewAuthHandler(db, cfg.JWTSecret)
 		reviewHandler := handlers.NewReviewHandler(db, searchService)
 		verificationHandler := handlers.NewVerificationHandler(db, searchService, imageService)
-		searchHandler := handlers.NewSearchHandler(service.NewSearchService(db, apiKey))
+		searchHandler := handlers.NewSearchHandler(searchService)
+		wishlistHandler := handlers.NewWishlistHandler(db)
+		searchLocalHandler := handlers.NewSearchLocalHandler(syncService)
 
 		// public routes - no login needed
 		auth := api.Group("/auth")
@@ -76,6 +83,9 @@ func main() {
 		// public read routes
 		api.GET("/restaurants/:id/reviews", reviewHandler.GetByRestaurant)
 		api.GET("/reviews/:reviewId/verification", verificationHandler.GetByReview)
+		api.GET("/search/cuisines", searchHandler.GetCuisineTypes)
+		api.GET("/search/local", searchLocalHandler.SearchLocal)
+		api.GET("/search/restaurants", searchHandler.SearchRestaurants)
 
 		// protected routes - need jwt token
 		protected := api.Group("")
@@ -87,9 +97,12 @@ func main() {
 			protected.PUT("/reviews/:id", reviewHandler.Update)
 			protected.DELETE("/reviews/:id", reviewHandler.Delete)
 			protected.POST("/verifications/upload", verificationHandler.UploadReceipt)
-			protected.GET("/search/restaurants", searchHandler.SearchRestaurants)
-			protected.GET("/search/cuisines", searchHandler.GetCuisineTypes)
 			protected.POST("/verifications/gps", verificationHandler.GPSCheckin)
+			protected.POST("/wishlist", wishlistHandler.AddToWishlist)
+			protected.GET("/wishlist", wishlistHandler.GetWishlist)
+			protected.POST("/wishlist/:restaurant_id", wishlistHandler.RemoveFromWishlist)
+			protected.GET("/restaurants/place/:placeId", searchHandler.GetRestaurantByPlaceID)
+			protected.GET("/restaurants/:id", searchHandler.GetRestaurantByID)
 		}
 	}
 
