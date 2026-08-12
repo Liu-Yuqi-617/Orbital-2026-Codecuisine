@@ -7,11 +7,7 @@ import Search from "./pages/Search"
 import { AuthProvider } from "./context/AuthContext"
 import ProtectedRoute from "./components/ProtectedRoute"
 import Wishlist from "./pages/Wishlist"
-<<<<<<< HEAD
-
-=======
 import RestaurantDetail from "./pages/RestaurantDetail"
->>>>>>> 1bb433bde7d29181141a25b99ecaf7e82740cd55
 
 function App() {
 
@@ -74,8 +70,6 @@ function App() {
                         }
                     />
 
-<<<<<<< HEAD
-=======
                     <Route
                         path="/restaurant/:id"
                         element={
@@ -85,7 +79,6 @@ function App() {
                         }
                     />
 
->>>>>>> 1bb433bde7d29181141a25b99ecaf7e82740cd55
                 </Routes>
 
             </BrowserRouter>
